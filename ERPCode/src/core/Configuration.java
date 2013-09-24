@@ -91,7 +91,11 @@ public class Configuration {
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
     // #[regen=yes,regenBody=yes,id=DCE.70889475-2318-9B64-CF32-88D4B03C9C2F]
     // </editor-fold> 
-    public static Configuration getInstance () {
+    public static Configuration getInstance () 
+    {
+        if(Configuration.instance == null)
+            Configuration.instance = new Configuration();
+        
         return instance;
     }
 

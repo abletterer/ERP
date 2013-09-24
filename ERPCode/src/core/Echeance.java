@@ -24,9 +24,13 @@ public class Echeance {
     // </editor-fold> 
     public Echeance () 
     {
+        this(Calendar.getInstance());
     }
     
-    public Echeance (Calendar date) {
+    public Echeance (Calendar date) 
+    {
+        this.date = date;
+        this.listCommandes = new ArrayList<Commande>();
     }
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
