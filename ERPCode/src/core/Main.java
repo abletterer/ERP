@@ -15,7 +15,10 @@ public class Main {
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
     // #[regen=yes,id=DCE.6F9745EF-0D20-A272-6FED-2DBE4C289183]
     // </editor-fold> 
-    public static void main (String args) {
+    public static void main (String[] args) 
+    {
+        Parser parser = Parser.getInstance();
+        parser.parse("./src/ressources/simulation_exemple.xml");
     }
 
 }

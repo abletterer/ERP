@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package core;
 
 import java.util.ArrayList;
@@ -17,9 +14,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class ConfigurationHandler extends DefaultHandler 
 {
-	private Configuration result;
-        private ArrayList<Integer> listTaches;
-	private ArrayList<Echeance> listEcheance;
+	private Configuration configuration;
 
 	private boolean inSimulation;
         private boolean inCommande;
@@ -28,11 +23,10 @@ public class ConfigurationHandler extends DefaultHandler
         private Echeance currentEcheance;
         private String clientCommandeCourant;
         private int dureeExpeditionCourante;
-	
+	private ArrayList<Integer> listTaches;
+	private ArrayList<Echeance> listEcheance;
+        
 	private StringBuffer buffer;
-
-
-
 
 	public ConfigurationHandler()
         {
@@ -42,83 +36,111 @@ public class ConfigurationHandler extends DefaultHandler
         @Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException
         {
-		if(qName.equals("simulation"))
+		if(qName.equals("simulation")) // Balise ouvrante de premier niveau
                 {
-			result = Configuration.getInstance();
+                        // Initalisation de la configuration et des listes
+			configuration = Configuration.getInstance();
+                        listTaches = new ArrayList<Integer>();
+                        listEcheance = new ArrayList<Echeance>();
+                        
 			inSimulation = true;
 		}
-                else if(qName.equals("commande"))
+                else if(inSimulation) // Balise ouvrante de second niveau
                 {
-			inCommande = true;
-                        clientCommandeCourant = attributes.getValue("client");
-                        
-                        try
+                    if(qName.equals("commande"))
+                    {
+                            inCommande = true;
+                            clientCommandeCourant = attributes.getValue("client");
+
+                            try
+                            {
+                                dureeExpeditionCourante = Integer.parseInt(attributes.getValue("duree_expedition"));
+                            }
+                            catch(Exception e)
+                            {
+                                System.err.println("Error: La durée d'expedition doit être un entier.");
+                            }
+                    }
+                    else if(inCommande) // Balise ouvrante de troisieme niveau
+                    {
+                        if(qName.equals("echeance"))
                         {
-                            dureeExpeditionCourante = Integer.parseInt(attributes.getValue("duree_expedition"));
-			}
-                        catch(Exception e)
+
+                            try
+                            {
+                                String[] dateSplit = (attributes.getValue("date")).split("/");
+
+                                // Construction de la date de l'echeance
+                                Calendar date = Calendar.getInstance();
+                                date.set(Integer.parseInt(dateSplit[2]), Integer.parseInt(dateSplit[1]), Integer.parseInt(dateSplit[0]));
+                                date.add(Calendar.DATE, dureeExpeditionCourante); 
+
+                                // Recherche d'un echéance deja existante
+                                this.currentEcheance = null;
+                                for(int i = 0; i < listEcheance.size(); i++)
+                                {
+                                    if(date.equals(listEcheance.get(i).getDate()))
+                                        this.currentEcheance = listEcheance.get(i); break;
+                                }
+
+                                // Création si elle n'existe pas
+                                if(this.currentEcheance == null)
+                                {
+                                    this.currentEcheance = new Echeance(date);
+                                    this.listEcheance.add(currentEcheance);
+                                }
+
+                                inEcheance = true;   
+                            }
+                            catch(Exception e)
+                            {
+                                    System.err.println("Error: La date de l'echeance n'est pas dans le format valide (DD/MM/YYYY)");
+                            }
+                        }
+                        else if(inEcheance)
                         {
-                            throw new SAXException(e);
-			}
+                            buffer = new StringBuffer();
+                            if(!qName.equals("quantite"))
+                            {
+                                System.err.println("Error: Balise ouvrante "+qName+" inconnue.");
+                            }
+                        }
+                        else
+                        {
+                            System.err.println("Error: Balise ouvrante "+qName+" inconnue.");
+                        }
+                    }
+                    else 
+                    {
+                            buffer = new StringBuffer();
+                            if(!qName.matches("^tache$|^date$|^prix$|^boulons$"
+                                    + "|^tempsLivraison$|^minStock$|^maxStock$|^enExploitation$"
+                                    + "|^heureTravail$|^coutUsineHeure$|^jourTravail$|^pourcentageAugQuantite$"
+                                    + "|^coursMensuelAcier$|^margeSouhaite$"))
+                            {
+                                System.err.println("Error: Balise ouvrante "+qName+" inconnue.");
+                            }
+                    }
                 }
-                else if(qName.equals("echeance"))
+                else
                 {
-                  
-                    try
-                    {
-                            String[] dateSplit = (attributes.getValue("date")).split("/");
-                            
-                            // Construction de la date de l'echeance
-                            Calendar date = Calendar.getInstance();
-                            date.set(Integer.parseInt(dateSplit[2]), Integer.parseInt(dateSplit[1]), Integer.parseInt(dateSplit[0]));
-                            date.add(Calendar.DATE, dureeExpeditionCourante); 
-                            
-                            // Recherche d'un echéance deja existante
-                            this.currentEcheance = null;
-                            for(int i = 0; i < listEcheance.size(); i++)
-                            {
-                                if(date.equals(listEcheance.get(i).getDate()))
-                                    this.currentEcheance = listEcheance.get(i); break;
-                            }
-                            
-                            // Création si elle n'existe pas
-                            if(this.currentEcheance == null)
-                            {
-                                this.currentEcheance = new Echeance(date);
-                                this.listEcheance.add(currentEcheance);
-                            }
-	            }
-                    catch(Exception e)
-                    {
-                            throw new SAXException("La date de l'echeance n'est pas dans le format valide (DD/MM/YYYY)");
-		    }
-                    
-                    inEcheance = true;    
-		}
-                else 
-                {
-                        buffer = new StringBuffer();
-                        if(!qName.matches("^tache$|^date$|^quantite$|^prix$|^boulons$"
-                                + "|^tempsLivraison$|^minStock$|^maxStock$|^enExploitation$"
-                                + "|^heureTravail$|^jourTravail$|^pourcentageAugQuantite$"
-                                + "|^coursMensuelAcier$|^margeSouhaite$"))
-                        {
-                            throw new SAXException("Balise ouvrante "+qName+" inconnue.");
-			}
-		}
+                    System.err.println("Error: Balise ouvrante "+qName+" ignoree.");
+                }
 	}
 	
         
         @Override
 	public void endElement(String uri, String localName, String qName) throws SAXException
         {
-            if(inSimulation)
+            if(inSimulation) // Balise fermante du premier niveau
             {
-                // Balise du premier niveau
-                switch (qName) {
+                switch (qName) 
+                {
                     case "simulation":
-                        this.result.setEcheances(listEcheance);
-                        this.result.setTaches(listTaches);
+                        // Rajout des echéances et des taches dans la simulation
+                        this.configuration.setEcheances(listEcheance);
+                        this.configuration.setTaches(listTaches);
+                        
                         inSimulation = false;
                         break;
                     case "tache":
@@ -128,213 +150,189 @@ public class ConfigurationHandler extends DefaultHandler
                         }
                         catch(Exception e)
                         {
-                            throw new SAXException(e);
+                            System.err.println("Error: La tache doit être un entier.");
                         }
                         break;
                     case "commande":
-                        clientCommandeCourant = "";
-                        dureeExpeditionCourante = 0;
                         inCommande = false;
                         break;
-                    case "bobine":
-                        inBobine = false;
+                 case "prix":
+                        try
+                        {
+                            this.configuration.setPrixBobine(Integer.parseInt(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: Le prix d'une bobine doit etre un entier.");
+                        }
                         break;
-                    case "divers":
-                        inDivers = false;
+                    case "boulons":
+                        try
+                        {
+                            this.configuration.setNbBoulonsBobine(Integer.parseInt(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: Le nombre de boulons d'une bobine doit etre un entier.");
+                        }
+                        break;
+                    case "tempsLivraison":
+                        try
+                        {
+                            this.configuration.setTempsLivraisonBobine(Integer.parseInt(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: Le temps de livraison d'une bobine doit etre un entier.");
+                        }
+                        break;
+                    case "minStock":
+                        try
+                        {
+                            this.configuration.setStockMinBobine(Integer.parseInt(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: Le stock minimal doit etre un entier.");
+                        }
+                        break;
+                    case "maxStock":
+                        try
+                        {
+                            this.configuration.setStockMaxBobine(Integer.parseInt(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: Le stock maximal d'une bobine doit etre un entier.");
+                        }
+                        break;
+                    case "enExploitation":
+                        try
+                        {
+                            this.configuration.setEnCoursBobine(Integer.parseInt(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: Le nb de bobine en exploitation doit etre un entier.");
+                        }
+                        break;
+                    case "heureTravail":
+                        try
+                        {
+                            this.configuration.setTravailHeureJour(Integer.parseInt(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: Le nombre d'heure de travail doit etre un entier.");
+                        }
+                        break;
+                    case "jourTravail":
+                        try
+                        {
+                            this.configuration.setTravailJourSemaine(Integer.parseInt(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: Le nombre de jour de travail par semaine doit etre un entier.");
+                        }
+                        break;
+                    case "coutUsineHeure":
+                        try
+                        {
+                            this.configuration.setCoutUsineHeure(Integer.parseInt(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: Le cout par heure de l'usine doit etre un entier.");
+                        }
+                        break;
+                    case "pourcentageAugQuantite":
+                        try
+                        {
+                            this.configuration.setAugmentationQuantiteCommande(Double.parseDouble(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: Le pourcentage d'augmentation de la production doit etre un flottant.");
+                        }
+                        break;
+                    case "coursMensuelAcier":
+                        try
+                        {
+                            this.configuration.setAugmentationPrixAcierMois(Double.parseDouble(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: Le cours mensuel de l'acier doit etre un flottant.");
+                        }
+                        break;
+                    case "margeSouhaite":
+                        try
+                        {
+                            this.configuration.setMargeSouhaite(Double.parseDouble(buffer.toString()));
+                        }
+                        catch( Exception e)
+                        {
+                             System.err.println("Error: La marge souhaitee doit être un flottant");
+                        }
                         break;
                     default:
-                        throw new SAXException("Balise "+qName+" inconnue.");
+                        if(inCommande) // Balise ouvrante de second niveau
+                        {
+                            if(qName.equals("echeance"))
+                            {
+                                inEcheance = false;
+                            }
+                            else if(inEcheance) // Balise ouvrante de troisieme niveau
+                            {
+                                if(qName.equals("quantite"))
+                                {
+                                    try
+                                    {
+                                        this.currentEcheance.addCommande(this.clientCommandeCourant, Integer.parseInt(buffer.toString()));
+                                    }
+                                    catch( Exception e)
+                                    {
+                                         System.err.println("Error: La quantite d'une echeance doit etre un entier.");
+                                    }
+                                }
+                                else
+                                {
+                                  System.err.println("Error: Balise fermante "+qName+"inconnue.");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            System.err.println("Error: Balise fermante "+qName+" inconnue.");
+                        }
                 }
-                
-                // Balise du second niveau
-                if(inCommande)
-                {
-                    switch (qName) 
-                    {
-                        case "echeance":
-                            inEcheance = false;
-                            break;
-                            
-                        case "quantite":
-                            // Balise du troisieme niveau
-                            if(inEcheance)
-                            {
-                                try
-                                {
-                                    this.currentEcheance.addCommande(this.clientCommandeCourant, Integer.parseInt(buffer.toString()));
-                                }
-                                catch( Exception e)
-                                {
-                                     throw new SAXException("La quantite d'une echeance doit etre un entier.");
-                                }
-                            }
-                            else
-                            {
-                              throw new SAXException("Balise "+qName+" ignoree.");
-                            }
-                            break;
-                            
-                        default:
-                            throw new SAXException("Balise "+qName+" inconnue.");
-                    }
-		}
-                else if(inBobine)
-                {
-                    switch (qName) {
-                        case "prix":
-                            try
-                            {
-                                this.result.setPrixBobine(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le prix d'une bobine doit etre un entier.");
-                            }
-                            break;
-                        case "boulons":
-                            try
-                            {
-                                this.result.setNbBoulonsBobine(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le nombre de boulons d'une bobine doit etre un entier.");
-                            }
-                            break;
-                        case "tempsLivraison":
-                            try
-                            {
-                                this.result.setTempsLivraisonBobine(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le temps de livraison d'une bobine doit etre un entier.");
-                            }
-                            break;
-                        case "minStock":
-                            try
-                            {
-                                this.result.setStockMinBobine(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le stock minimal doit etre un entier.");
-                            }
-                            break;
-                        case "maxStock":
-                            try
-                            {
-                                this.result.setStockMaxBobine(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le stock maximal d'une bobine doit etre un entier.");
-                            }
-                            break;
-                        case "enExploitation":
-                            try
-                            {
-                                this.result.setEnCoursBobine(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le nb de bobine en exploitation doit etre un entier.");
-                            }
-                            break;
-                        default:
-                            throw new SAXException("Balise "+qName+"ignoree.");
-                    }
-		}
-                else if(inDivers)
-                {
-			 switch (qName) {
-                        case "heureTravail":
-                            try
-                            {
-                                this.result.setTravailHeureJour(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le nombre d'heure de travail doit etre un entier.");
-                            }
-                            break;
-                        case "jourTravail":
-                            try
-                            {
-                                this.result.setTravailJourSemaine(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le nombre de jour de travail par semaine doit etre un entier.");
-                            }
-                            break;
-                        case "tempsLivraison":
-                            try
-                            {
-                                this.result.setTempsLivraisonBobine(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le temps de livraison d'une bobine doit etre un entier.");
-                            }
-                            break;
-                        case "minStock":
-                            try
-                            {
-                                this.result.setStockMinBobine(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le stock minimal doit etre un entier.");
-                            }
-                            break;
-                        case "maxStock":
-                            try
-                            {
-                                this.result.setStockMaxBobine(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le stock maximal d'une bobine doit etre un entier.");
-                            }
-                            break;
-                        case "enExploitation":
-                            try
-                            {
-                                this.result.setEnCoursBobine(Integer.parseInt(buffer.toString()));
-                            }
-                            catch( Exception e)
-                            {
-                                 throw new SAXException("Le nb de bobine en exploitation doit etre un entier.");
-                            }
-                            break;
-                        default:
-                            throw new SAXException("Balise "+qName+"ignoree.");
-                    }
-		}
-               
+
             }
             else
             {
-                    throw new SAXException("Balise "+qName+" ignoree.");
+                    System.err.println("Error: Balise fermante "+qName+" ignoree.");
             }
 	}
-	//détection de caractères
-	public void characters(char[] ch,int start, int length)
-			throws SAXException{
+        
+        @Override
+	public void characters(char[] ch,int start, int length) throws SAXException
+        {
 		String lecture = new String(ch,start,length);
-		if(buffer != null) buffer.append(lecture);       
+		if(buffer != null) 
+                    buffer.append(lecture);       
 	}
-	//début du parsing
-	public void startDocument() throws SAXException {
-		System.out.println("Début du parsing");
+        
+        @Override
+	public void startDocument() throws SAXException 
+        {
+		System.out.println(">> Début du parsing");
 	}
-	//fin du parsing
-	public void endDocument() throws SAXException {
-		System.out.println("Fin du parsing");
-		System.out.println("Resultats du parsing");
-		for(Personne p : annuaire){
-			System.out.println(p);
-		}
+
+        
+        @Override
+	public void endDocument() throws SAXException 
+        {
+		System.out.println(">> Fin du parsing");
 	}
 }
