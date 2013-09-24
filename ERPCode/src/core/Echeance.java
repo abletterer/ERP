@@ -22,6 +22,10 @@ public class Echeance {
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
     // #[regen=yes,id=DCE.7F71CC10-9C24-2980-38BA-DDD3C2EA3A0D]
     // </editor-fold> 
+    public Echeance () 
+    {
+    }
+    
     public Echeance (Calendar date) {
     }
 
@@ -65,6 +69,15 @@ public class Echeance {
     // </editor-fold> 
     public String toString () {
         return null;
+    }
+
+    void addCommande(String client, int quantite) 
+    {
+        Commande newcommande = new Commande();
+        newcommande.setClient(client);
+        newcommande.setQuantite(quantite);
+        
+        this.listCommandes.add(newcommande);
     }
 
 }

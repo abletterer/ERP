@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<simulation>
+    <tache nom="decoupe">2</tache>
+    <tache nom="forgeage">6</tache>
+    <tache nom="traitement">2</tache>
+    <tache nom="emballage">2</tache>
+    <commande client="Alztom" duree_expedition="2">
+        <echeance date="15/11/1960">
+            <quantite>15000</quantite>
+        </echeance>
+        <echeance date="01/12/1960">
+            <quantite>15000</quantite>
+        </echeance>
+    </commande>
+    <commande client="Tomy" duree_expedition="3">
+        <echeance date="15/11/1960">
+            <quantite>5000</quantite>
+        </echeance>
+        <echeance date="15/12/1960">
+            <quantite>15000</quantite>
+        </echeance>
+    </commande>
+    <prix>10000</prix>
+    <boulons>1000</boulons>
+    <tempsLivraison>10</tempsLivraison>
+    <minStock>1</minStock>
+    <maxStock>2</maxStock>
+    <enExploitation>1</enExploitation>
+    <heureTravail>7</heureTravail>
+    <jourTravail>5</jourTravail>
+    <coutUsineHeure>1000</coutUsineHeure>
+    <pourcentageAugQuantite>10.0</pourcentageAugQuantite>
+    <coursMensuelAcier>2.0</coursMensuelAcier>
+    <margeSouhaite>70.0</margeSouhaite>
+</simulation>
+
