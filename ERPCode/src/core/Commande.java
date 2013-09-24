@@ -54,7 +54,8 @@ public class Commande {
     // #[regen=yes,id=DCE.119E22D2-27B8-45C5-F05E-DCD5C0C2E278]
     // </editor-fold> 
     public String toString () {
-        return null;
+        return      "##Commande## : Client: " + this.client
+                +   " Quantite : " + this.quantite;
     }
 
 }

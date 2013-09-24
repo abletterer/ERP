@@ -65,12 +65,19 @@ public class Simulation {
     // #[regen=yes,id=DCE.4B0C3A85-C202-60DC-9B4D-2C154A22AD73]
     // </editor-fold> 
     private void processQ1 (boolean useAugmentationQuantite) {
+        System.out.println("Question 1)");
+        System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
+        
+        float test = configuration.getTempsConstruction()/(float)configuration.getTravailHeureJour()
+         * (configuration.getStockMaxBobine()-configuration.getStockMinBobine()+configuration.getEnCoursBobine());
     }
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
     // #[regen=yes,id=DCE.65AE5BA6-4AC6-AEB2-180B-B54AD5CC8DA6]
     // </editor-fold> 
     private void processQ2 (boolean useAugmentationQuantite) {
+        System.out.println("Question 2)");
+        System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
     }
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 

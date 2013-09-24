@@ -309,7 +309,17 @@ public class Configuration {
     // #[regen=yes,id=DCE.55975020-2BF5-4CA3-B761-40D9BE0371F1]
     // </editor-fold> 
     public String toString () {
-        return null;
+        String res = "#################\n";
+        res += "##Configuration##\n";
+        res += "#################\n";
+        res += this.nbBoulonsBobine + " boulons réalisés avec une bobine.\n";
+        res += this.prixBobine + " euros par bobine.\n";
+        res += this.travailHeureJour + " heure(s) de travail par jour\n";
+        res += this.travailJourSemaine + " jour(s) de travail par semaine\n";
+        res += this.nbBoulonsBobine + " boulons réalisés avec une bobine\n";
+        res += this.nbBoulonsBobine + " boulons réalisés avec une bobine\n";
+        res += this.nbBoulonsBobine + " boulons réalisés avec une bobine\n";
+        return res;
     }
 
 }

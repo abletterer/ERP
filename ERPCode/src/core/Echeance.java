@@ -68,10 +68,16 @@ public class Echeance {
     // #[regen=yes,id=DCE.FB4028DC-C07B-F295-0FE4-AE2EDB4416F6]
     // </editor-fold> 
     public String toString () {
-        return null;
+        String res = "####Echeance####\n";
+        for(int i=0; i<this.listCommandes.size(); ++i) {
+            res += this.listCommandes.get(i).toString();
+            if(i!=this.listCommandes.size()-1)
+                res += "\n\n";
+        }
+        return res;
     }
 
-    void addCommande(String client, int quantite) 
+    public void addCommande(String client, int quantite) 
     {
         Commande newcommande = new Commande();
         newcommande.setClient(client);
