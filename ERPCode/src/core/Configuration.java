@@ -86,6 +86,7 @@ public class Configuration {
     // #[regen=yes,id=DCE.9895685E-E702-4E12-DB7A-0E84D6C637E3]
     // </editor-fold> 
     private Configuration () {
+        this.taches = new ArrayList<>();
     }
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
@@ -264,7 +265,7 @@ public class Configuration {
     // #[regen=yes,id=DCE.D8B60A83-DF3D-1CEC-52F1-04CDBC90C56C]
     // </editor-fold> 
     public int getTempsConstruction () {
-        return 0;
+        return 6;
     }
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
@@ -313,16 +314,36 @@ public class Configuration {
     // #[regen=yes,id=DCE.55975020-2BF5-4CA3-B761-40D9BE0371F1]
     // </editor-fold> 
     public String toString () {
-        String res = "#################\n";
-        res += "##Configuration##\n";
+        String res = "";
+        res += "#################\n";
+        res += "##CONFIGURATION##\n";
         res += "#################\n";
         res += this.nbBoulonsBobine + " boulons réalisés avec une bobine.\n";
         res += this.prixBobine + " euros par bobine.\n";
-        res += this.travailHeureJour + " heure(s) de travail par jour\n";
-        res += this.travailJourSemaine + " jour(s) de travail par semaine\n";
-        res += this.nbBoulonsBobine + " boulons réalisés avec une bobine\n";
-        res += this.nbBoulonsBobine + " boulons réalisés avec une bobine\n";
-        res += this.nbBoulonsBobine + " boulons réalisés avec une bobine\n";
+        res += this.travailHeureJour + " heure(s) de travail par jour.\n";
+        res += this.travailJourSemaine + " jour(s) de travail par semaine.\n";
+        res += this.enCoursBobine + " boulons réalisés avec une bobine.\n";
+        res += this.tempsLivraisonBobine + " boulons réalisés avec une bobine.\n";
+        res += this.augmentationPrixAcierMois + "% d'augmentation du prix de l'acier par mois.\n";
+        res += "Cout horaire de l'usine de " + this.coutUsineHeure + " euros par heure.\n";
+        res += this.augmentationQuantiteCommande + "% d'augmentation de la quantité commandée.\n";
+        res += this.margeSouhaite + "% de marge souhaitée.\n";
+        
+        res += "####TACHES####\n";
+        for(int i=0; i<this.taches.size(); ++i) {
+            //Affichage des tâches de production
+            res += "Durée de la ";
+            
+            if(i==0) res += "1ère tâche : ";
+            else  res+= i+"ème tâche : ";
+            
+            res += " heure(s)\n";
+        }
+        
+        for(int i=0; i<this.echeances.size(); ++i) {
+            res += this.echeances.get(i).toString();
+        }
+                
         return res;
     }
 

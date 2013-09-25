@@ -70,6 +70,8 @@ public class Simulation {
         
         float test = configuration.getTempsConstruction()/(float)configuration.getTravailHeureJour()
          * (configuration.getStockMaxBobine()-configuration.getStockMinBobine()+configuration.getEnCoursBobine());
+        
+        System.out.println("Il faut commander 2 nouvelles bobines tous les "+test+" depuis la dernière commande de bobine au maximum");
     }
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 

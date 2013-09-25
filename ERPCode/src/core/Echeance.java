@@ -72,7 +72,7 @@ public class Echeance {
     // #[regen=yes,id=DCE.FB4028DC-C07B-F295-0FE4-AE2EDB4416F6]
     // </editor-fold> 
     public String toString () {
-        String res = "####Echeance####\n";
+        String res = "Echéance du "+this.date.toString()+"\n";
         for(int i=0; i<this.listCommandes.size(); ++i) {
             res += this.listCommandes.get(i).toString();
             if(i!=this.listCommandes.size()-1)
