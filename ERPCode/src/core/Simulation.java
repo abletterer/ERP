@@ -5,30 +5,19 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-// <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-// #[regen=yes,id=DCE.73AA51F6-5B3C-5C3D-4179-1F40411BD0DD]
-// </editor-fold> 
 public class Simulation {
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.7D1C06D7-9455-8B1B-38E4-16E2E7DEAFB3]
-    // </editor-fold> 
     private static Simulation instance;
 
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.A086D108-AE9E-398D-5FBE-0D2B9792739A]
-    // </editor-fold> 
     private Simulation () {
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,regenBody=yes,id=DCE.BE214756-D732-E155-548A-367395536393]
-    // </editor-fold> 
     public static Simulation getInstance () 
     {
         if(Simulation.instance == null)
@@ -37,9 +26,6 @@ public class Simulation {
         return Simulation.instance;
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.AB0FFB05-C7CA-46DB-C914-F471ECBC7AC9]
-    // </editor-fold> 
     public void simulate (String filename) 
     {
         // Configuration et execution de la simulation
@@ -87,9 +73,6 @@ public class Simulation {
         return false;
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.4B0C3A85-C202-60DC-9B4D-2C154A22AD73]
-    // </editor-fold> 
     public void processQ1 (boolean useAugmentationQuantite) {
         System.out.println("Question 1)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
@@ -97,10 +80,11 @@ public class Simulation {
         Configuration configuration = Configuration.getInstance();
         
         long tempsUtilisationStockBobine = Math.round(configuration.getTempsConstruction()
-         * (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()));   //On réalise une troncature puisque qu'on souhaite réaliser une approximation
+         * (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()));
         
         //AJOUTER GESTION DEPASSEMENT QUANTITE COMMANDE
         
+        //Calcul de la quantité à livrer
         int quantiteALivrer = 0;
         ArrayList<Echeance> echeances = configuration.getEcheances();
         
@@ -108,40 +92,80 @@ public class Simulation {
             quantiteALivrer += echeances.get(i).getTotalQuantite();
         }
         
+        //Calcul de la quantité théorique que l'on peut produire au maximum pendant la période donnée
         Calendar dateDebut = Calendar.getInstance();
-        
+        dateDebut.clear();
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd mm yyyy");
-            dateDebut.setTime(sdf.parse("01 10 1960"));
+            SimpleDateFormat sdf = new SimpleDateFormat("d-MM-y");
+            dateDebut.setTime(sdf.parse("01-10-1969"));
         } catch (ParseException ex) {
             Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        long quantiteProductionTheorique = (echeances.get(echeances.size()-1).getDate().getTimeInMillis()-dateDebut.getTimeInMillis());
+        int joursEcart = (int) (
+                (echeances.get(echeances.size()-1).getDate().getTimeInMillis()
+                -dateDebut.getTimeInMillis())/(1000*3600*24));  
         
+        int tempsTravailTotal = joursEcart-(joursEcart/7*2);
         
+        long productionBoulonsTheorique = Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*tempsTravailTotal;
         
-        System.out.println("Il faut commander " + configuration.getStockMaxBobine()+configuration.getEnCoursBobine() + " nouvelles bobines toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
+        System.out.println("Production de boulons théorique : "+productionBoulonsTheorique);
+        System.out.println("Nombre de boulons commandés : "+quantiteALivrer);
+        
+        //Calcul de quantité pour chacun des clients
+        
+        String client;
+        Echeance lastEcheance;
+        int lastQuantiteClient;
+        int joursEcartClient;
+        int tempsTravailTotalClient;
+        int quantiteALivrerClient;
+        long productionBoulonsTheoriqueClient;
+        for(int i=0; i<configuration.getClients().size(); ++i) {
+            //On calcule le nombre de boulons à produire pour chaque client et on le compare avec le nombre de boulons que l'on sait produire
+            client = configuration.getClients().get(i);
+            lastEcheance = new Echeance();
+            quantiteALivrerClient = 0;
+
+            //Nombre de boulons commandés par le client courant
+            for(int j=0; j<echeances.size(); ++j) {
+                lastQuantiteClient = quantiteALivrerClient;
+                quantiteALivrerClient += echeances.get(j).getTotalQuantiteByClient(client);
+
+                if(quantiteALivrerClient!=lastQuantiteClient)
+                    lastEcheance = echeances.get(j);
+            }
+            
+            //Nombre de boulons que l'entreprise peut produire pour le client courant
+            joursEcartClient = (int) (
+            (lastEcheance.getDate().getTimeInMillis()
+            -dateDebut.getTimeInMillis())/(1000*3600*24));  
+
+            tempsTravailTotalClient = joursEcartClient-(joursEcartClient/7*2);
+
+            productionBoulonsTheoriqueClient = Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*tempsTravailTotalClient;
+
+            System.out.println("Production de boulons théorique pour le client " + client + ": "+productionBoulonsTheoriqueClient);
+            System.out.println("Nombre de boulons commandés par le client " + client + ": "+quantiteALivrerClient);
+        }
+        
+        if(quantiteALivrer>productionBoulonsTheorique) {
+            //Si l'ensemble des commandes n'est pas réalisable alors on regarde au niveau des commandes de chaque client
+        }
+        
+        System.out.println("Il faut commander " + (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()) + " nouvelles bobines toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.65AE5BA6-4AC6-AEB2-180B-B54AD5CC8DA6]
-    // </editor-fold> 
     private void processQ2 (boolean useAugmentationQuantite) {
         System.out.println("Question 2)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
         
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.1DF3DFFB-3524-EA22-F30B-517918B81FF1]
-    // </editor-fold> 
     private void processQ3 () {
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.A57E9BCB-8230-4833-BB04-15A56F7409E4]
-    // </editor-fold> 
     private void processQ4 () {
     }
 
