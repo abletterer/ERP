@@ -11,10 +11,6 @@ public class Simulation {
     // </editor-fold> 
     private static Simulation instance;
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.51A27014-55ED-4081-92B5-6ACCEBA657AE]
-    // </editor-fold> 
-    private Configuration configuration;
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
     // #[regen=yes,id=DCE.A086D108-AE9E-398D-5FBE-0D2B9792739A]
@@ -25,40 +21,62 @@ public class Simulation {
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
     // #[regen=yes,regenBody=yes,id=DCE.BE214756-D732-E155-548A-367395536393]
     // </editor-fold> 
-    public static Simulation getInstance () {
-        return instance;
+    public static Simulation getInstance () 
+    {
+        if(Simulation.instance == null)
+            Simulation.instance = new Simulation();
+        
+        return Simulation.instance;
     }
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
     // #[regen=yes,id=DCE.AB0FFB05-C7CA-46DB-C914-F471ECBC7AC9]
     // </editor-fold> 
-    public void simulate (String filename) {
+    public void simulate (String filename) 
+    {
+        // Configuration et execution de la simulation
+        if(this.configure(filename))
+            this.execute();
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,regenBody=yes,id=DCE.8C5A6818-F67B-9029-BC68-4C640114FAC7]
-    // </editor-fold> 
-    public Configuration getConfiguration () {
-        return configuration;
+    private void execute ()
+    {
+       
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,regenBody=yes,id=DCE.9E54A41D-6568-715D-BD73-040DEA21DF0B]
-    // </editor-fold> 
-    public void setConfiguration (Configuration val) {
-        this.configuration = val;
-    }
-
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.C06499C5-A255-CA49-635E-6FB2B12F073C]
-    // </editor-fold> 
-    private void execute () {
-    }
-
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.DE569B84-3286-3011-48B3-90109350F540]
-    // </editor-fold> 
-    private void configure () {
+    private boolean configure (String filename) 
+    {
+        // Parsing du fichier de configuration XML
+         if(Configuration.parse(filename))
+         {
+            
+            System.out.println(">> Configuration chargée !");
+            
+            // Recuperation de la configuration parsée
+            Configuration conf = Configuration.getInstance();
+            
+            // Verification que le configuration est valide
+            if(conf.getEcheances().size() > 0 && conf.getTaches().size() > 0)
+            {
+                System.out.println(">> Configuration valide !");
+                System.out.println();
+                
+                // Affichage de la configuration
+                System.out.println(Configuration.getInstance().toString());
+                
+                return true;
+            }
+            else
+            {
+                 System.err.println(">> Configuration non valide !");
+            }
+        }
+        else
+        {
+            System.err.println(" >> Echec de chargement de la configuration !");
+        }
+         
+        return false;
     }
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
