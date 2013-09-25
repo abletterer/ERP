@@ -21,8 +21,8 @@ public class ConfigurationHandler extends DefaultHandler
         private boolean inEcheance;
         
         private Echeance currentEcheance;
-        private String clientCommandeCourant;
-        private int dureeExpeditionCourante;
+        private String clientCommandeCourant = "";
+        private int dureeExpeditionCourante = 0;
 	private ArrayList<Integer> listTaches;
 	private ArrayList<Echeance> listEcheance;
         
@@ -72,8 +72,10 @@ public class ConfigurationHandler extends DefaultHandler
 
                                 // Construction de la date de l'echeance
                                 Calendar date = Calendar.getInstance();
-                                date.set(Integer.parseInt(dateSplit[2]), Integer.parseInt(dateSplit[1]), Integer.parseInt(dateSplit[0]));
-                                date.add(Calendar.DATE, dureeExpeditionCourante); 
+                                date.clear();
+                                
+                                date.set(Integer.parseInt(dateSplit[2]), Integer.parseInt(dateSplit[1]) - 1, Integer.parseInt(dateSplit[0]));
+                                date.add(Calendar.DAY_OF_MONTH, -dureeExpeditionCourante); 
 
                                 // Recherche d'un echéance deja existante
                                 this.currentEcheance = null;
@@ -87,7 +89,6 @@ public class ConfigurationHandler extends DefaultHandler
                                 if(this.currentEcheance == null)
                                 {
                                     this.currentEcheance = new Echeance(date);
-                                    this.listEcheance.add(currentEcheance);
                                 }
 
                                 inEcheance = true;   
@@ -155,6 +156,8 @@ public class ConfigurationHandler extends DefaultHandler
                         break;
                     case "commande":
                         inCommande = false;
+                        dureeExpeditionCourante = 0;
+                        clientCommandeCourant = "";
                         break;
                  case "prix":
                         try
@@ -290,10 +293,38 @@ public class ConfigurationHandler extends DefaultHandler
                                     try
                                     {
                                         this.currentEcheance.addCommande(this.clientCommandeCourant, Integer.parseInt(buffer.toString()));
+                                        
+                                        // Ajout de l'echéance dans la liste si elle n'existe pas.
+                                        boolean isExist = false;
+                                        for(int i = 0; i < this.listEcheance.size(); i++)
+                                        {
+                                            if(this.listEcheance.get(i) == this.currentEcheance) 
+                                            {
+                                                isExist = true;
+                                                break;
+                                            }
+                                        }
+                                        
+                                        if(!isExist)
+                                           this.listEcheance.add(this.currentEcheance);
                                     }
                                     catch( Exception e)
                                     {
                                          System.err.println("Error: La quantite d'une echeance doit etre un entier.");
+                                         
+                                         // Suppression de l'echéance dans la liste si elle n'existe pas.
+                                        boolean isExist = false;
+                                        for(int i = 0; i < this.listEcheance.size(); i++)
+                                        {
+                                            if(this.listEcheance.get(i) == this.currentEcheance) 
+                                            {
+                                                isExist = true;
+                                                break;
+                                            }
+                                        }
+                                        
+                                        if(!isExist)
+                                           this.currentEcheance = null;
                                     }
                                 }
                                 else

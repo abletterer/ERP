@@ -2,7 +2,9 @@ package core;
 
 import java.util.ArrayList; 
 
+
 public class Configuration {
+
 
     private static Configuration instance;
 
@@ -189,10 +191,12 @@ public class Configuration {
         this.travailHeureJour = val;
     }
 
+
     public int getTravailJourSemaine () {
         return travailJourSemaine;
     }
 
+    
     public void setTravailJourSemaine (int val) {
         this.travailJourSemaine = val;
     }
@@ -219,9 +223,9 @@ public class Configuration {
             res += "Durée de la ";
             
             if(i==0) res += "1ère tâche : ";
-            else  res+= i+"ème tâche : ";
+            else  res+= i+1+"ème tâche : ";
             
-            res += " heure(s)\n";
+            res += this.taches.get(i) + " heure(s)\n";
         }
         
         for(int i=0; i<this.echeances.size(); ++i) {

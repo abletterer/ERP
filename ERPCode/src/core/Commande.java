@@ -55,7 +55,7 @@ public class Commande {
     // </editor-fold> 
     public String toString () {
         return      "##Commande## : Client: " + this.client
-                +   " Quantite : " + this.quantite;
+                +   " Quantite : " + this.quantite + "\n";
     }
 
 }
