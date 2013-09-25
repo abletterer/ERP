@@ -157,6 +157,7 @@ public class ConfigurationHandler extends DefaultHandler
                     case "commande":
                         inCommande = false;
                         dureeExpeditionCourante = 0;
+                        this.configuration.addClient(clientCommandeCourant);
                         clientCommandeCourant = "";
                         break;
                  case "prix":

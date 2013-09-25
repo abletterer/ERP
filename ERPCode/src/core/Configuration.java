@@ -19,6 +19,10 @@ public class Configuration {
 
     private ArrayList<Integer> taches;
 
+    private ArrayList<Echeance> echeances;
+
+    private ArrayList<String> clients;
+    
     private int nbBoulonsBobine = 1000;
 
     private int prixBobine = 10000;
@@ -43,10 +47,9 @@ public class Configuration {
 
     private double margeSouhaite = 70.0;
 
-    private ArrayList<Echeance> echeances;
-
     private Configuration () {
         this.taches = new ArrayList<>();
+        this.clients = new ArrayList<>();
     }
 
     public static Configuration getInstance () 
@@ -71,6 +74,19 @@ public class Configuration {
 
     public void setAugmentationQuantiteCommande (double val) {
         this.augmentationQuantiteCommande = val;
+    }
+
+    public ArrayList<String> getClients () {
+        return clients;
+    }
+
+    public void setClients (ArrayList<String> val) {
+        this.clients = val;
+    }
+    
+    public void addClient(String client) {
+        if(!this.clients.contains(client))
+            this.clients.add(client);
     }
 
     public int getCoutUsineHeure () {
