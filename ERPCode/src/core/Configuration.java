@@ -168,6 +168,8 @@ public class Configuration {
             }
         }
         
+        System.out.println("Temps de construction : " + res + " heure(s)");
+        
         return res;
     }
 

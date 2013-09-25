@@ -68,7 +68,7 @@ public class Simulation {
         System.out.println("Question 1)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
         
-        float test = configuration.getTempsConstruction()/(float)configuration.getTravailHeureJour()
+        double test = configuration.getTempsConstruction()/configuration.getTravailHeureJour()
          * (configuration.getStockMaxBobine()-configuration.getStockMinBobine()+configuration.getEnCoursBobine());
         
         System.out.println("Il faut commander 2 nouvelles bobines tous les "+test+" jour(s) depuis la dernière commande de bobine au maximum");
