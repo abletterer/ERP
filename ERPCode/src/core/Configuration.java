@@ -164,13 +164,11 @@ public class Configuration {
         res = max;
         
         for(int i=0; i < this.taches.size(); ++i) {
-            //
+            //Pour chaque autre tâche on ajoute le temps unitaire au temps de la tâche critique
             if(i!=index_max) {
                 res+=this.taches.get(i)/(double)this.nbBoulonsBobine;
             }
         }
-        
-        System.out.println("Temps de construction : " + res + " heure(s)");
         
         return res;
     }

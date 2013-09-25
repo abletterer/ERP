@@ -64,14 +64,16 @@ public class Simulation {
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
     // #[regen=yes,id=DCE.4B0C3A85-C202-60DC-9B4D-2C154A22AD73]
     // </editor-fold> 
-    private void processQ1 (boolean useAugmentationQuantite) {
+    public void processQ1 (boolean useAugmentationQuantite) {
         System.out.println("Question 1)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
         
-        double test = configuration.getTempsConstruction()/configuration.getTravailHeureJour()
-         * (configuration.getStockMaxBobine()-configuration.getStockMinBobine()+configuration.getEnCoursBobine());
+        Configuration configuration1 = Configuration.getInstance();
         
-        System.out.println("Il faut commander 2 nouvelles bobines tous les "+test+" jour(s) depuis la dernière commande de bobine au maximum");
+        double test = configuration1.getTempsConstruction()/configuration1.getTravailHeureJour()
+         * (configuration1.getStockMaxBobine()-configuration1.getStockMinBobine()+configuration1.getEnCoursBobine());
+        
+        System.out.println("Il faut commander 2 nouvelles bobines tous les "+test/24+" heure(s) depuis la dernière commande de bobine au maximum");
     }
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
