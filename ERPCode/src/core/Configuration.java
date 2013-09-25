@@ -166,7 +166,7 @@ public class Configuration {
             //Recherche de la tâche ayant la durée maximum
             if(this.taches.get(i)>max) {
                 max = (double) this.taches.get(i);
-                index_max = 0;
+                index_max = i;
             }
         }
         

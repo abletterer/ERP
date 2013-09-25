@@ -86,12 +86,14 @@ public class Simulation {
         System.out.println("Question 1)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
         
-        Configuration configuration1 = Configuration.getInstance();
+        Configuration configuration = Configuration.getInstance();
         
-        double test = configuration1.getTempsConstruction()/configuration1.getTravailHeureJour()
-         * (configuration1.getStockMaxBobine()-configuration1.getStockMinBobine()+configuration1.getEnCoursBobine());
+        int res = (int)(configuration.getTempsConstruction()
+         * (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()));
         
-        System.out.println("Il faut commander 2 nouvelles bobines tous les "+test/24+" heure(s) depuis la dernière commande de bobine au maximum");
+        //AJOUTER GESTION DEPASSEMENT QUANTITE COMMANDE
+        
+        System.out.println("Il faut commander " + configuration.getStockMaxBobine()+configuration.getEnCoursBobine() + " nouvelles bobines toutes les " + res + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
     }
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 

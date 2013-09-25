@@ -21,17 +21,17 @@
             <quantite>15000</quantite>
         </echeance>
     </commande>
-    <prix>5000</prix>
-    <boulons>500</boulons>
-    <tempsLivraison>102</tempsLivraison>
-    <minStock>11</minStock>
-    <maxStock>23</maxStock>
-    <enExploitation>11</enExploitation>
-    <heureTravail>8</heureTravail>
-    <jourTravail>6</jourTravail>
-    <coutUsineHeure>1100</coutUsineHeure>
-    <pourcentageAugQuantite>10.5</pourcentageAugQuantite>
-    <coursMensuelAcier>2.05</coursMensuelAcier>
-    <margeSouhaite>75.0</margeSouhaite>
+    <prix>10000</prix>
+    <boulons>1000</boulons>
+    <tempsLivraison>10</tempsLivraison>
+    <minStock>1</minStock>
+    <maxStock>2</maxStock>
+    <enExploitation>1</enExploitation>
+    <heureTravail>7</heureTravail>
+    <jourTravail>5</jourTravail>
+    <coutUsineHeure>1000</coutUsineHeure>
+    <pourcentageAugQuantite>10.0</pourcentageAugQuantite>
+    <coursMensuelAcier>2.0</coursMensuelAcier>
+    <margeSouhaite>70.0</margeSouhaite>
 </simulation>
 
