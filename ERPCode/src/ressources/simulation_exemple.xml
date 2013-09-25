@@ -6,19 +6,43 @@
     <tache nom="traitement">2</tache>
     <tache nom="emballage">2</tache>
     <commande client="Alztom" duree_expedition="4">
-        <echeance date="15/11/1960">
+        <echeance date="15/11/1969">
             <quantite>15000</quantite>
         </echeance>
-        <echeance date="01/12/1960">
+        <echeance date="01/12/1969">
+            <quantite>15000</quantite>
+        </echeance>
+        <echeance date="15/12/1969">
+            <quantite>15000</quantite>
+        </echeance>
+        <echeance date="01/01/1970">
+            <quantite>15000</quantite>
+        </echeance>
+        <echeance date="15/01/1970">
+            <quantite>15000</quantite>
+        </echeance>
+        <echeance date="01/02/1970">
             <quantite>15000</quantite>
         </echeance>
     </commande>
     <commande client="Tomy" duree_expedition="2">
-        <echeance date="15/11/1960">
+        <echeance date="01/02/1970">
             <quantite>5000</quantite>
         </echeance>
-        <echeance date="14/12/1960">
-            <quantite>15000</quantite>
+        <echeance date="05/02/1970">
+            <quantite>5000</quantite>
+        </echeance>
+        <echeance date="10/02/1970">
+            <quantite>5000</quantite>
+        </echeance>
+        <echeance date="15/02/1970">
+            <quantite>5000</quantite>
+        </echeance>
+        <echeance date="20/02/1970">
+            <quantite>5000</quantite>
+        </echeance>
+        <echeance date="25/02/1970">
+            <quantite>5000</quantite>
         </echeance>
     </commande>
     <prix>10000</prix>
