@@ -150,10 +150,6 @@ public class Simulation {
             System.out.println("Nombre de boulons commandés par le client " + client + ": "+quantiteALivrerClient);
         }
         
-        if(quantiteALivrer>productionBoulonsTheorique) {
-            //Si l'ensemble des commandes n'est pas réalisable alors on regarde au niveau des commandes de chaque client
-        }
-        
         System.out.println("Il faut commander " + (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()) + " nouvelles bobines toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
     }
 
