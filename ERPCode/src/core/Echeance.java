@@ -71,13 +71,14 @@ public class Echeance {
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
     // #[regen=yes,id=DCE.FB4028DC-C07B-F295-0FE4-AE2EDB4416F6]
     // </editor-fold> 
-    public String toString () {
-        String res = "Echéance du "+this.date.toString()+"\n";
-        for(int i=0; i<this.listCommandes.size(); ++i) {
+    public String toString () 
+    {
+        String res = "Echéance du "+this.date.get(Calendar.DAY_OF_MONTH)+"/" + (this.date.get(Calendar.MONTH)+1)+"/" +this.date.get(Calendar.YEAR)+"\n";
+        for(int i=0; i<this.listCommandes.size(); ++i) 
+        {
             res += this.listCommandes.get(i).toString();
-            if(i!=this.listCommandes.size()-1)
-                res += "\n\n";
         }
+        
         return res;
     }
 

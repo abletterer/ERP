@@ -2,19 +2,12 @@ package core;
 
 import java.util.ArrayList; 
 
-// <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-// #[regen=yes,id=DCE.5A66AA99-1892-3EC1-92BA-630C1C36914F]
-// </editor-fold> 
+
 public class Configuration {
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.84C3A93D-F49C-7631-2D61-638E05400F44]
-    // </editor-fold> 
+
     private static Configuration instance;
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,id=DCE.8E19C5D4-611D-10DB-D301-C799DB6CAD09]
-    // </editor-fold> 
     private ArrayList<Integer> taches;
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
@@ -298,14 +291,12 @@ public class Configuration {
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
     // #[regen=yes,regenBody=yes,id=DCE.1F7FAD19-E5F9-2E0B-8143-FFFC6D5658DE]
-    // </editor-fold> 
+    // </editor-fold>
     public int getTravailJourSemaine () {
         return travailJourSemaine;
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
-    // #[regen=yes,regenBody=yes,id=DCE.84BAC2D6-0AF3-8F3F-5B1E-372B3ED3CEF9]
-    // </editor-fold> 
+
     public void setTravailJourSemaine (int val) {
         this.travailJourSemaine = val;
     }
@@ -335,9 +326,9 @@ public class Configuration {
             res += "Durée de la ";
             
             if(i==0) res += "1ère tâche : ";
-            else  res+= i+"ème tâche : ";
+            else  res+= i+1+"ème tâche : ";
             
-            res += " heure(s)\n";
+            res += this.taches.get(i) + " heure(s)\n";
         }
         
         for(int i=0; i<this.echeances.size(); ++i) {
