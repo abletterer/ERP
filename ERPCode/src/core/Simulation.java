@@ -41,7 +41,7 @@ public class Simulation {
 
     private void execute ()
     {
-       
+       this.processQ1(false);
     }
 
     private boolean configure (String filename) 
