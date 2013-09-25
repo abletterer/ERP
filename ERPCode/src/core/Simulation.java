@@ -1,5 +1,13 @@
 package core;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
 // #[regen=yes,id=DCE.73AA51F6-5B3C-5C3D-4179-1F40411BD0DD]
@@ -88,12 +96,32 @@ public class Simulation {
         
         Configuration configuration = Configuration.getInstance();
         
-        int res = (int)(configuration.getTempsConstruction()
-         * (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()));
+        long tempsUtilisationStockBobine = Math.round(configuration.getTempsConstruction()
+         * (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()));   //On réalise une troncature puisque qu'on souhaite réaliser une approximation
         
         //AJOUTER GESTION DEPASSEMENT QUANTITE COMMANDE
         
-        System.out.println("Il faut commander " + configuration.getStockMaxBobine()+configuration.getEnCoursBobine() + " nouvelles bobines toutes les " + res + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
+        int quantiteALivrer = 0;
+        ArrayList<Echeance> echeances = configuration.getEcheances();
+        
+        for(int i=0; i<echeances.size(); ++i) {
+            quantiteALivrer += echeances.get(i).getTotalQuantite();
+        }
+        
+        Calendar dateDebut = Calendar.getInstance();
+        
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd mm yyyy");
+            dateDebut.setTime(sdf.parse("01 10 1960"));
+        } catch (ParseException ex) {
+            Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        long quantiteProductionTheorique = (echeances.get(echeances.size()-1).getDate().getTimeInMillis()-dateDebut.getTimeInMillis());
+        
+        
+        
+        System.out.println("Il faut commander " + configuration.getStockMaxBobine()+configuration.getEnCoursBobine() + " nouvelles bobines toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
     }
 
     // <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
