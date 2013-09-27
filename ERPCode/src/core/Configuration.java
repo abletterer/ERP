@@ -2,7 +2,10 @@ package core;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList; 
+import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,10 +49,21 @@ public class Configuration {
     private double augmentationQuantiteCommande = 10.0;
 
     private double margeSouhaite = 70.0;
+    
+    private Calendar dateDebut;
 
     private Configuration () {
         this.taches = new ArrayList<>();
         this.clients = new ArrayList<>();
+        
+        dateDebut = Calendar.getInstance();
+        dateDebut.clear();
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("d-MM-y");
+            dateDebut.setTime(sdf.parse("01-10-1969"));
+        } catch (ParseException ex) {
+            Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public static Configuration getInstance () 
@@ -222,6 +236,28 @@ public class Configuration {
     
     public void setTravailJourSemaine (int val) {
         this.travailJourSemaine = val;
+    }
+    
+    public Calendar getDateDebut() {
+        return this.dateDebut;
+    }
+    
+    public void setDateDebut(Calendar dateDebut) {
+        this.dateDebut = dateDebut;
+    }
+    
+    /**
+     * Exemple de format de date valide : 01-10-1969 pour représenter le 1er octobre 1969
+     * @param dateDebut 
+     */
+    public void setDateDebut(String dateDebut) {
+        this.dateDebut.clear();
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("d-MM-y");
+            this.dateDebut.setTime(sdf.parse(dateDebut));
+        } catch (ParseException ex) {
+            Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public static boolean parse(String filename) 
