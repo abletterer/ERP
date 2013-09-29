@@ -92,21 +92,50 @@ public class Simulation {
             quantiteALivrer += echeances.get(i).getTotalQuantite();
         }
         
-        //Calcul de la quantité théorique que l'on peut produire au maximum pendant la période donnée
-        Calendar dateDebut = configuration.getDateDebut();
+        ArrayList<Long> quantitesTheorique = this.getProductionEcheances();
+        long productionBoulonsTheorique = 0;
         
-        int joursEcart = (int) (
-                (echeances.get(echeances.size()-1).getDate().getTimeInMillis()
-                -dateDebut.getTimeInMillis())/(1000*3600*24));  
-        
-        int tempsTravailTotal = joursEcart-(joursEcart/7*2);
-        
-        long productionBoulonsTheorique = Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*tempsTravailTotal;
+        for(int i=0; i<quantitesTheorique.size(); ++i) {
+            productionBoulonsTheorique += quantitesTheorique.get(i);
+        }
         
         System.out.println("Production de boulons théorique : "+productionBoulonsTheorique);
         System.out.println("Nombre de boulons commandés : "+quantiteALivrer);
         
         System.out.println("Il faut commander " + (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()) + " nouvelles bobines toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
+    }
+    
+    /**
+     * 
+     * @return Les quantités que l'on peut produire pour chaque échéance
+     */
+    private ArrayList<Long> getProductionEcheances() {
+        ArrayList<Long> res = new ArrayList<>();
+        Configuration configuration = Configuration.getInstance();
+        Calendar lastDate = configuration.getDateDebut();
+        
+        int millisVersJours = 1000*3600*24; //Conversion de millisecondes vers jours (pour accélérer les calculs on ne fait la multiplication qu'une seule fois)
+        
+        int joursEcart;
+        
+        for(int i=0; i<configuration.getEcheances().size(); ++i) {
+            if(i==0) {
+                joursEcart = (int) ((configuration.getEcheances().get(i).getDate().getTimeInMillis()
+                        - lastDate.getTimeInMillis())/millisVersJours);  //Jours d'écarts (ouvrés + weekend) entre l'échéance courante et la dernière échéance
+            }
+            else {
+                joursEcart = (int) ((configuration.getEcheances().get(i).getDate().getTimeInMillis()
+                        - lastDate.getTimeInMillis())/millisVersJours)-1;  //Jours d'écarts (ouvrés + weekend) entre l'échéance courante et la dernière échéance
+            }
+            
+            joursEcart = joursEcart-(joursEcart/7*2);   //Jours d'écarts (ouvrés) entre l'échéance courante et la dernière échéance (2 jours weekend par semaine)
+            
+            res.add(Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*joursEcart);
+            
+            lastDate = configuration.getEcheances().get(i).getDate();
+        }
+        
+        return res;
     }
     
     private void simulateExecutionContrats() {
