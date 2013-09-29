@@ -1,13 +1,7 @@
 package core;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class Simulation {
@@ -36,6 +30,7 @@ public class Simulation {
     private void execute ()
     {
        this.processQ1(false);
+       this.processQ2(false);
     }
 
     private boolean configure (String filename) 
@@ -77,12 +72,14 @@ public class Simulation {
         System.out.println("Question 1)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
         
+        if(useAugmentationQuantite) {
+            Configuration.getInstance().enableAugmentationQuantiteCommande(true);
+        }
+        
         Configuration configuration = Configuration.getInstance();
         
         long tempsUtilisationStockBobine = Math.round(configuration.getTempsConstruction()
          * (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()));
-        
-        //AJOUTER GESTION DEPASSEMENT QUANTITE COMMANDE
         
         //Calcul de la quantité à livrer
         int quantiteALivrer = 0;
@@ -92,127 +89,118 @@ public class Simulation {
             quantiteALivrer += echeances.get(i).getTotalQuantite();
         }
         
-        ArrayList<Long> quantitesTheorique = this.getProductionEcheances();
+        ArrayList<Long> quantitesTheorique = this.getProductionTheoriqueEcheances();
         long productionBoulonsTheorique = 0;
         
         for(int i=0; i<quantitesTheorique.size(); ++i) {
             productionBoulonsTheorique += quantitesTheorique.get(i);
         }
         
-        System.out.println("Production de boulons théorique : "+productionBoulonsTheorique);
-        System.out.println("Nombre de boulons commandés : "+quantiteALivrer);
+        long quantite = productionBoulonsTheorique-quantiteALivrer;
         
-        System.out.println("Il faut commander " + (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()) + " nouvelles bobines toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
+        if(quantite>0) {
+            //Si la production théorique est supérieure à la quantité à livrer
+            Calendar dateFinCommande = (Calendar) echeances.get(echeances.size()-1).getDate().clone();   //Récupère la dernière date de livraison
+            
+            dateFinCommande = getDateFrom(dateFinCommande,quantite/(Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())));
+            String dateString= dateFinCommande.get(Calendar.DAY_OF_MONTH) + "/" + (dateFinCommande.get(Calendar.MONTH)+1) + "/" + dateFinCommande.get(Calendar.YEAR);
+            System.out.println("Il faut commander " + (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()) 
+                    + " nouvelles bobines toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur."
+                    + " Il ne faudra plus commander de bobines à partir du " + dateString + ".");
+        }
+        else {
+            System.out.println("Il faut commander " + (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()) + " nouvelles bobines toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
+        }
+        
+        if(useAugmentationQuantite) {
+            Configuration.getInstance().enableAugmentationQuantiteCommande(false);
+        }
+    }
+    
+    /**
+     * @return la date située avant la date 'a' (séparé de 'jours' jours ouvrés)
+     */
+    private Calendar getDateFrom(Calendar a, long jours) {
+        Calendar res = (Calendar) a.clone();
+        while(jours>0){
+            if(!isWeekend(res)) {
+                --jours;
+            }
+            res.add(Calendar.DATE, -1);
+        }
+        return res;
+    }
+    
+    /**
+     * @return la date située après la date 'a' (séparé de 'jours' jours ouvrés)
+     */
+    private Calendar getDateTo(Calendar a, long jours) {
+        Calendar res = (Calendar) a.clone();
+        while(jours>0){
+            if(!isWeekend(res)) {
+                --jours;
+            }
+            res.add(Calendar.DATE, 1);
+        }
+        return res;
+    }
+    
+    /**
+     * @return le nombre de jours ouvrés entre deux dates
+     */
+    private int getNombreJoursOuvres(Calendar a, Calendar b) {
+        int res = 0;
+        Calendar from, to;
+        if(a.compareTo(b)<=0) {
+            from = (Calendar) a.clone();
+            to = (Calendar) b.clone();
+        }
+        else {
+            from = (Calendar) b.clone();
+            to = (Calendar) a.clone();
+        }
+
+        while(!from.equals(to)) {
+            if(!isWeekend(from)) {
+                ++res;
+            }
+            from.add(Calendar.DATE,1);
+        }
+        ++res;
+
+        return res;
     }
     
     /**
      * 
-     * @return Les quantités que l'on peut produire pour chaque échéance
+     * @return Vrai si le jour passé en paramètre est Samedi ou Dimanche
      */
-    private ArrayList<Long> getProductionEcheances() {
+    private boolean isWeekend(Calendar cal) {
+        return cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
+               cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY;
+    }
+    
+    /**
+     * 
+     * @return Les quantités que l'on peut produire pour chacune des échéances
+     */
+    private ArrayList<Long> getProductionTheoriqueEcheances() {
         ArrayList<Long> res = new ArrayList<>();
         Configuration configuration = Configuration.getInstance();
-        Calendar lastDate = configuration.getDateDebut();
+        Calendar lastDate = (Calendar) configuration.getDateDebut().clone();
         
-        int millisVersJours = 1000*3600*24; //Conversion de millisecondes vers jours (pour accélérer les calculs on ne fait la multiplication qu'une seule fois)
+        //On enlève le nombre de jours pendant lesquels l'entreprise ne produit rien du au temps d'attente de la première commande de bobins
+        lastDate.add(Calendar.DATE, configuration.getTempsLivraisonBobine()-(int)Math.round(configuration.getTempsConstruction()/configuration.getTravailHeureJour()*(configuration.getStockMaxBobine()+configuration.getEnCoursBobine())));
         
         int joursEcart;
         
         for(int i=0; i<configuration.getEcheances().size(); ++i) {
-            if(i==0) {
-                joursEcart = (int) ((configuration.getEcheances().get(i).getDate().getTimeInMillis()
-                        - lastDate.getTimeInMillis())/millisVersJours);  //Jours d'écarts (ouvrés + weekend) entre l'échéance courante et la dernière échéance
-            }
-            else {
-                joursEcart = (int) ((configuration.getEcheances().get(i).getDate().getTimeInMillis()
-                        - lastDate.getTimeInMillis())/millisVersJours)-1;  //Jours d'écarts (ouvrés + weekend) entre l'échéance courante et la dernière échéance
-            }
-            
-            joursEcart = joursEcart-(joursEcart/7*2);   //Jours d'écarts (ouvrés) entre l'échéance courante et la dernière échéance (2 jours weekend par semaine)
+            joursEcart = getNombreJoursOuvres(configuration.getEcheances().get(i).getDate() ,lastDate);  //Jours d'écart (ouvrés) entre l'échéance courante et la dernière échéance
             
             res.add(Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*joursEcart);
             
-            lastDate = configuration.getEcheances().get(i).getDate();
-        }
-        
-        return res;
-    }
-    
-    private void simulateExecutionContrats() {
-        Configuration configuration = Configuration.getInstance();
-        ArrayList<Echeance> echeances = configuration.getEcheances();
-        Calendar dateDebut = configuration.getDateDebut();
-        
-        String client;
-        Echeance lastEcheance;
-        int lastQuantite;
-        int joursEcart;
-        int tempsTravailTotal = 0;
-        int quantiteALivrer;
-        long productionBoulonsTheorique;
-        
-        for(int i=0; i<configuration.getClients().size(); ++i) {
-            //On calcule le nombre de boulons à produire pour chaque client
-            client = configuration.getClients().get(i);
-            lastEcheance = new Echeance();
-            quantiteALivrer = 0;
-
-            //Nombre de boulons commandés par le client courant
-            for(int j=0; j<echeances.size(); ++j) {
-                lastQuantite = quantiteALivrer;
-                quantiteALivrer += echeances.get(j).getTotalQuantiteByClient(client);
-            
-                //Nombre de boulons que l'entreprise peut produire pour le client courant
-                joursEcart = (int) (
-                (lastEcheance.getDate().getTimeInMillis()
-                -dateDebut.getTimeInMillis())/(1000*3600*24));  
-
-                tempsTravailTotal = joursEcart-(joursEcart/7*2);
-
-                if(quantiteALivrer!=lastQuantite)
-                    lastEcheance = echeances.get(j);
-            }
-
-            productionBoulonsTheorique = Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*tempsTravailTotal;
-
-            System.out.println("Production de boulons théorique pour le client " + client + ": "+productionBoulonsTheorique);
-            System.out.println("Nombre de boulons commandés par le client " + client + ": "+quantiteALivrer);
-        }
-    }
-    
-    private int getTotalQuantiteCommandeeClient(String client) {
-        int res =0;
-        Configuration configuration = Configuration.getInstance();
-        ArrayList<Commande> commandesEcheance;
-        
-        for(int i=0; i<configuration.getEcheances().size(); ++i) {
-            //On parcourt l'ensemble des échéances
-            commandesEcheance = configuration.getEcheances().get(i).getListCommandes();
-            for(int j=0; j<commandesEcheance.size(); j++) {
-                //On cherche le client à travers toutes les commandes l'échéance courante
-                if(commandesEcheance.get(i).getClient().equals(client)) {
-                    res += commandesEcheance.get(i).getQuantite();
-                }
-            }
-        }
-        
-        return res;
-    }
-    
-    private Echeance getTotalEcheancesClient(String client) {
-        Echeance res = new Echeance();
-        Configuration configuration = Configuration.getInstance();
-        ArrayList<Commande> commandesEcheance;
-        
-        for(int i=0; i<configuration.getEcheances().size(); ++i) {
-            //On parcourt l'ensemble des échéances
-            commandesEcheance = configuration.getEcheances().get(i).getListCommandes();
-            for(int j=0; j<commandesEcheance.size(); j++) {
-                //On cherche le client à travers toutes les commandes l'échéance courante
-                if(commandesEcheance.get(i).getClient().equals(client)) {
-                    res.addCommande(client, commandesEcheance.get(i).getQuantite());
-                }
-            }
+            lastDate = (Calendar) configuration.getEcheances().get(i).getDate().clone();
+            lastDate.add(Calendar.DATE, 1); //On ajoute 1 jour pour ne pas compter des jours de travail en double
         }
         
         return res;
@@ -222,12 +210,52 @@ public class Simulation {
         System.out.println("Question 2)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
         
+        simulateExecutionContrats();
+    }
+    
+    private void simulateExecutionContrats() {
+        Configuration configuration = Configuration.getInstance();
+        ArrayList<Echeance> echeances = configuration.getEcheances();
+        ArrayList<Long> productionTheoriqueEcheances = this.getProductionTheoriqueEcheances();
+        
+        String client;
+        int quantiteALivrer;
+        String dateEcheance;
+        int sommeProductionsTheoriqueEcheances;
+        
+        for(int i=0; i<configuration.getClients().size(); ++i) {
+            //On calcule le nombre de boulons à produire pour chaque client
+            client = configuration.getClients().get(i);
+            sommeProductionsTheoriqueEcheances = 0;
+
+            //Nombre de boulons commandés par le client courant
+            for(int j=0; j<echeances.size(); ++j) {
+                if(echeances.get(j).getTotalQuantiteByClient(client)!=0) {
+                    //Si le client courant à une commande à l'échéance courante
+                    quantiteALivrer = echeances.get(j).getTotalQuantiteByClient(client);
+                    sommeProductionsTheoriqueEcheances += productionTheoriqueEcheances.get(j);  //On ajoute la quantité théorique à produire
+                    sommeProductionsTheoriqueEcheances -= quantiteALivrer;  //On soustrait la quantité à livrer au client
+
+                    dateEcheance = echeances.get(j).getDate().get(Calendar.DAY_OF_MONTH) + "/" + (echeances.get(j).getDate().get(Calendar.MONTH)+1) + "/" + echeances.get(j).getDate().get(Calendar.YEAR);
+                    
+                    if(sommeProductionsTheoriqueEcheances>0) {
+                        //Si la quantité théorique de production est supérieure à la commande
+                        System.out.println("Commande pour le client " + client + " à l'échéance du "+ dateEcheance + " réalisable. Production en avance de " + sommeProductionsTheoriqueEcheances + " boulon(s).");
+                    }
+                    else {
+                        System.out.println("Commande pour le client " + client + " à l'échéance du "+ dateEcheance + " non réalisable. Production en retard de " + -sommeProductionsTheoriqueEcheances + " boulon(s).");
+                    }
+                }
+            }
+        }
     }
 
     private void processQ3 () {
     }
 
     private void processQ4 () {
+        processQ1(true);
+        processQ2(true);
     }
 
 }

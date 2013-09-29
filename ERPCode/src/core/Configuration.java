@@ -50,6 +50,8 @@ public class Configuration {
 
     private double margeSouhaite = 70.0;
     
+    private boolean enableAugmentationQuantiteCommande = false;
+    
     private Calendar dateDebut;
 
     private Configuration () {
@@ -88,6 +90,34 @@ public class Configuration {
 
     public void setAugmentationQuantiteCommande (double val) {
         this.augmentationQuantiteCommande = val;
+    }
+    
+    /*
+     * Met a jour les valeurs des commandes clients avec l'augmentation prévue dans le contrat
+     */
+    public void enableAugmentationQuantiteCommande(boolean enable) {
+        if(enable!=this.enableAugmentationQuantiteCommande) {
+            //Si l'augmentation n'était pas déjà active/n'était pas déjà inactive
+            Commande commande;
+            if(enable) {
+                for(int i=0; i<this.echeances.size(); ++i) {
+                    for(int j=0; j<this.echeances.get(i).getListCommandes().size(); ++j) {
+                        commande = this.echeances.get(i).getListCommandes().get(j);
+                        commande.setQuantite((int)Math.round(commande.getQuantite()*(1+this.getAugmentationQuantiteCommande()/100)));
+                    }
+                }
+                this.enableAugmentationQuantiteCommande = true;
+            }
+            else {
+                for(int i=0; i<this.echeances.size(); ++i) {
+                    for(int j=0; j<this.echeances.get(i).getListCommandes().size(); ++j) {
+                        commande = this.echeances.get(i).getListCommandes().get(j);
+                        commande.setQuantite((int)Math.round(commande.getQuantite()/(1+this.getAugmentationQuantiteCommande()/100)));
+                    }
+                }
+                this.enableAugmentationQuantiteCommande = false;
+            }
+        }
     }
 
     public ArrayList<String> getClients () {
