@@ -47,10 +47,10 @@ public class Configuration {
     private int coutUsineHeure = 1000;
 
     private double augmentationQuantiteCommande = 10.0;
-
-    private double margeSouhaite = 70.0;
     
     private boolean enableAugmentationQuantiteCommande = false;
+
+    private double margeSouhaite = 70.0;
     
     private Calendar dateDebut;
 
@@ -82,6 +82,10 @@ public class Configuration {
 
     public void setAugmentationPrixAcierMois (double val) {
         this.augmentationPrixAcierMois = val;
+    }
+    
+    public void augmentePrixAcierMois() {
+        this.prixBobine *= (1+this.prixBobine*this.augmentationPrixAcierMois/100);
     }
 
     public double getAugmentationQuantiteCommande () {
@@ -217,7 +221,7 @@ public class Configuration {
     * @return 
     */
     public double getTempsConstruction () {
-        double res = -1.0;
+        double res;
         
         double max = (double)this.taches.get(0), index_max = 0;
         
@@ -332,7 +336,9 @@ public class Configuration {
         res += this.prixBobine + " euros par bobine.\n";
         res += this.travailHeureJour + " heure(s) de travail par jour.\n";
         res += this.travailJourSemaine + " jour(s) de travail par semaine.\n";
-        res += this.enCoursBobine + " boulons réalisés avec une bobine.\n";
+        res += this.enCoursBobine + " bobine(s) en cours d'utilisation";
+        res += this.stockMaxBobine + " bobine(s) au maximum dans le stock";
+        res += "Stock de sécurité de "+this.stockMinBobine + " bobine(s) ";
         res += this.tempsLivraisonBobine + " boulons réalisés avec une bobine.\n";
         res += this.augmentationPrixAcierMois + "% d'augmentation du prix de l'acier par mois.\n";
         res += "Cout horaire de l'usine de " + this.coutUsineHeure + " euros par heure.\n";

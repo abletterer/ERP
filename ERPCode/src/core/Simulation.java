@@ -190,7 +190,7 @@ public class Simulation {
         Calendar lastDate = (Calendar) configuration.getDateDebut().clone();
         
         //On enlève le nombre de jours pendant lesquels l'entreprise ne produit rien du au temps d'attente de la première commande de bobins
-        lastDate.add(Calendar.DATE, configuration.getTempsLivraisonBobine()-(int)Math.round(configuration.getTempsConstruction()/configuration.getTravailHeureJour()*(configuration.getStockMaxBobine()+configuration.getEnCoursBobine())));
+        lastDate = getDateTo(lastDate, configuration.getTempsLivraisonBobine()-(int)Math.round(configuration.getTempsConstruction()/configuration.getTravailHeureJour()*(configuration.getStockMaxBobine()+configuration.getEnCoursBobine())));
         
         int joursEcart;
         
@@ -221,36 +221,94 @@ public class Simulation {
         String client;
         int quantiteALivrer;
         String dateEcheance;
-        int sommeProductionsTheoriqueEcheances;
+        long sommeProductionsTheoriqueEcheances;
         
-        for(int i=0; i<configuration.getClients().size(); ++i) {
-            //On calcule le nombre de boulons à produire pour chaque client
-            client = configuration.getClients().get(i);
-            sommeProductionsTheoriqueEcheances = 0;
+        for(int j=0; j<echeances.size(); ++j) {
+            for(int i=0; i<echeances.get(j).getListCommandes().size(); ++i) {
+                //Si le client courant à une commande à l'échéance courante
+                quantiteALivrer = echeances.get(j).getListCommandes().get(i).getQuantite();
+                client = echeances.get(j).getListCommandes().get(i).getClient();
+                 
+                if(j!=0) {
+                    sommeProductionsTheoriqueEcheances = productionTheoriqueEcheances.get(j-1)+productionTheoriqueEcheances.get(j);
+                }
+                else {
+                    sommeProductionsTheoriqueEcheances = productionTheoriqueEcheances.get(j);
+                }
+                
+                sommeProductionsTheoriqueEcheances -= quantiteALivrer;  //On soustrait la quantité à livrer au client
+                productionTheoriqueEcheances.set(j,sommeProductionsTheoriqueEcheances); //Mise a jour de la nouvelle valeur de production théorique restante
 
-            //Nombre de boulons commandés par le client courant
-            for(int j=0; j<echeances.size(); ++j) {
-                if(echeances.get(j).getTotalQuantiteByClient(client)!=0) {
-                    //Si le client courant à une commande à l'échéance courante
-                    quantiteALivrer = echeances.get(j).getTotalQuantiteByClient(client);
-                    sommeProductionsTheoriqueEcheances += productionTheoriqueEcheances.get(j);  //On ajoute la quantité théorique à produire
-                    sommeProductionsTheoriqueEcheances -= quantiteALivrer;  //On soustrait la quantité à livrer au client
+                dateEcheance = echeances.get(j).getDate().get(Calendar.DAY_OF_MONTH) + "/" + (echeances.get(j).getDate().get(Calendar.MONTH)+1) + "/" + echeances.get(j).getDate().get(Calendar.YEAR);
 
-                    dateEcheance = echeances.get(j).getDate().get(Calendar.DAY_OF_MONTH) + "/" + (echeances.get(j).getDate().get(Calendar.MONTH)+1) + "/" + echeances.get(j).getDate().get(Calendar.YEAR);
-                    
-                    if(sommeProductionsTheoriqueEcheances>0) {
-                        //Si la quantité théorique de production est supérieure à la commande
-                        System.out.println("Commande pour le client " + client + " à l'échéance du "+ dateEcheance + " réalisable. Production en avance de " + sommeProductionsTheoriqueEcheances + " boulon(s).");
-                    }
-                    else {
-                        System.out.println("Commande pour le client " + client + " à l'échéance du "+ dateEcheance + " non réalisable. Production en retard de " + -sommeProductionsTheoriqueEcheances + " boulon(s).");
-                    }
+                if(sommeProductionsTheoriqueEcheances>0) {
+                    //Si la quantité théorique de production est supérieure à la commande
+                    System.out.println("Commande pour le client " + client + " à l'échéance du "+ dateEcheance + " réalisable. Production en avance de " + sommeProductionsTheoriqueEcheances + " boulon(s).");
+                }
+                else {
+                    System.out.println("Commande pour le client " + client + " à l'échéance du "+ dateEcheance + " non réalisable. Production en retard de " + -sommeProductionsTheoriqueEcheances + " boulon(s).");
                 }
             }
         }
     }
 
     private void processQ3 () {
+        Configuration configuration = Configuration.getInstance();
+        Calendar dateDebut = configuration.getDateDebut();
+        Calendar dateFin;
+        
+        for(int i=0; i<configuration.getClients().size(); ++i) {
+            dateFin = getDateFinContratClient(configuration.getClients().get(i));
+            
+        }
+    }
+    
+    /**
+     * 
+     * @return la date de la dernière commande pour le client passé en paramètre (aussi appelée date de fin de contrat)
+     */
+    private Calendar getDateFinContratClient(String client) {
+        Calendar res = Calendar.getInstance();
+        
+        Configuration configuration = Configuration.getInstance();
+        Commande commande;
+        
+        for(int i=0; i<configuration.getEcheances().size(); ++i) {
+            for(int j=0; j<configuration.getEcheances().get(i).getListCommandes().size(); ++j) {
+                commande = configuration.getEcheances().get(i).getListCommandes().get(j);
+                if(client.equals(commande.getClient())) {
+                    //Si la date correspondant au client que nous recherchons
+                    res = (Calendar) configuration.getEcheances().get(i).getDate().clone();
+                }
+            }
+        }
+        
+        return res;
+    }
+    
+    /**
+     * 
+     * @return le nombre de mois entre deux dates passées en paramètre
+     */
+    private int getNombreMois(Calendar a, Calendar b) {
+        int res = 0;
+        
+        Calendar from, to;
+        if(a.compareTo(b)<=0) {
+            from = (Calendar) a.clone();
+            to = (Calendar) b.clone();
+        }
+        else {
+            from = (Calendar) b.clone();
+            to = (Calendar) a.clone();
+        }
+        
+        while(from!=to) {
+            res++;
+            from.add(Calendar.MONTH,1);
+        }
+        
+        return res;
     }
 
     private void processQ4 () {

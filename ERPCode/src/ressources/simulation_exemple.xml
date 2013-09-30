@@ -5,7 +5,7 @@
     <tache nom="forgeage">6</tache>
     <tache nom="traitement">2</tache>
     <tache nom="emballage">2</tache>
-    <commande client="Alztom" duree_expedition="4">
+    <commande client="Alztom" duree_expedition="3">
         <echeance date="15/11/1969">
             <quantite>15000</quantite>
         </echeance>
