@@ -2,6 +2,7 @@ package core;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 
 
 public class Simulation {
@@ -31,6 +32,7 @@ public class Simulation {
     {
        this.processQ1(false);
        this.processQ2(false);
+       this.processQ3();
     }
 
     private boolean configure (String filename) 
@@ -103,13 +105,17 @@ public class Simulation {
             Calendar dateFinCommande = (Calendar) echeances.get(echeances.size()-1).getDate().clone();   //Récupère la dernière date de livraison
             
             dateFinCommande = getDateFrom(dateFinCommande,quantite/(Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())));
-            String dateString= dateFinCommande.get(Calendar.DAY_OF_MONTH) + "/" + (dateFinCommande.get(Calendar.MONTH)+1) + "/" + dateFinCommande.get(Calendar.YEAR);
+            String dateString= dateFinCommande.get(Calendar.DAY_OF_MONTH) + "/" 
+                    + (dateFinCommande.get(Calendar.MONTH)+1) + "/" 
+                    + dateFinCommande.get(Calendar.YEAR);
             System.out.println("Il faut commander " + (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()) 
                     + " nouvelles bobines toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur."
                     + " Il ne faudra plus commander de bobines à partir du " + dateString + ".");
         }
         else {
-            System.out.println("Il faut commander " + (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()) + " nouvelles bobines toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
+            System.out.println("Il faut commander " + (configuration.getStockMaxBobine() + configuration.getEnCoursBobine())
+                    + " nouvelles bobines toutes les " + tempsUtilisationStockBobine 
+                    + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
         }
         
         if(useAugmentationQuantite) {
@@ -126,7 +132,7 @@ public class Simulation {
             if(!isWeekend(res)) {
                 --jours;
             }
-            res.add(Calendar.DATE, -1);
+            res.add(Calendar.DAY_OF_MONTH, -1);
         }
         return res;
     }
@@ -140,7 +146,7 @@ public class Simulation {
             if(!isWeekend(res)) {
                 --jours;
             }
-            res.add(Calendar.DATE, 1);
+            res.add(Calendar.DAY_OF_MONTH, 1);
         }
         return res;
     }
@@ -164,7 +170,7 @@ public class Simulation {
             if(!isWeekend(from)) {
                 ++res;
             }
-            from.add(Calendar.DATE,1);
+            from.add(Calendar.DAY_OF_MONTH,1);
         }
         ++res;
 
@@ -189,18 +195,21 @@ public class Simulation {
         Configuration configuration = Configuration.getInstance();
         Calendar lastDate = (Calendar) configuration.getDateDebut().clone();
         
-        //On enlève le nombre de jours pendant lesquels l'entreprise ne produit rien du au temps d'attente de la première commande de bobins
-        lastDate = getDateTo(lastDate, configuration.getTempsLivraisonBobine()-(int)Math.round(configuration.getTempsConstruction()/configuration.getTravailHeureJour()*(configuration.getStockMaxBobine()+configuration.getEnCoursBobine())));
+        //On enlève le nombre de jours pendant lesquels l'entreprise ne produit qu'avec le nombre de bobines en stock jusqu'au temps d'attente de la réception des premières bobines commandées
+        lastDate = getDateTo(lastDate, configuration.getTempsLivraisonBobine()
+                -(int)Math.round(configuration.getTempsConstruction()/configuration.getTravailHeureJour()
+                *(configuration.getStockMaxBobine()+configuration.getEnCoursBobine())));
         
         int joursEcart;
         
         for(int i=0; i<configuration.getEcheances().size(); ++i) {
             joursEcart = getNombreJoursOuvres(configuration.getEcheances().get(i).getDate() ,lastDate);  //Jours d'écart (ouvrés) entre l'échéance courante et la dernière échéance
             
-            res.add(Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*joursEcart);
+            res.add(Math.round(configuration.getTravailHeureJour()
+                    /configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*joursEcart);
             
             lastDate = (Calendar) configuration.getEcheances().get(i).getDate().clone();
-            lastDate.add(Calendar.DATE, 1); //On ajoute 1 jour pour ne pas compter des jours de travail en double
+            lastDate.add(Calendar.DAY_OF_MONTH, 1); //On ajoute 1 jour pour ne pas compter des jours de travail en double
         }
         
         return res;
@@ -239,14 +248,20 @@ public class Simulation {
                 sommeProductionsTheoriqueEcheances -= quantiteALivrer;  //On soustrait la quantité à livrer au client
                 productionTheoriqueEcheances.set(j,sommeProductionsTheoriqueEcheances); //Mise a jour de la nouvelle valeur de production théorique restante
 
-                dateEcheance = echeances.get(j).getDate().get(Calendar.DAY_OF_MONTH) + "/" + (echeances.get(j).getDate().get(Calendar.MONTH)+1) + "/" + echeances.get(j).getDate().get(Calendar.YEAR);
+                dateEcheance = echeances.get(j).getDate().get(Calendar.DAY_OF_MONTH) + "/"
+                        + (echeances.get(j).getDate().get(Calendar.MONTH)+1) + "/"
+                        + echeances.get(j).getDate().get(Calendar.YEAR);
 
                 if(sommeProductionsTheoriqueEcheances>0) {
                     //Si la quantité théorique de production est supérieure à la commande
-                    System.out.println("Commande pour le client " + client + " à l'échéance du "+ dateEcheance + " réalisable. Production en avance de " + sommeProductionsTheoriqueEcheances + " boulon(s).");
+                    System.out.println("Commande pour le client " + client + " à l'échéance du "
+                            + dateEcheance + " réalisable. Production en avance de " 
+                            + sommeProductionsTheoriqueEcheances + " boulon(s).");
                 }
                 else {
-                    System.out.println("Commande pour le client " + client + " à l'échéance du "+ dateEcheance + " non réalisable. Production en retard de " + -sommeProductionsTheoriqueEcheances + " boulon(s).");
+                    System.out.println("Commande pour le client " + client 
+                            + " à l'échéance du "+ dateEcheance + " non réalisable. Production en retard de "
+                            + -sommeProductionsTheoriqueEcheances + " boulon(s).");
                 }
             }
         }
@@ -254,13 +269,34 @@ public class Simulation {
 
     private void processQ3 () {
         Configuration configuration = Configuration.getInstance();
-        Calendar dateDebut = configuration.getDateDebut();
-        Calendar dateFin;
+        
+        Calendar dateDebutContratClient;
+        Calendar dateFinContratClient;
+        int moisCourant;
+        double coutRevient = 0.0;
         
         for(int i=0; i<configuration.getClients().size(); ++i) {
-            dateFin = getDateFinContratClient(configuration.getClients().get(i));
-            
+            dateFinContratClient = getDateFinContratClient(configuration.getClients().get(i));
+            dateDebutContratClient = getDateDebutContratClient(configuration.getClients().get(i), dateFinContratClient);
+            moisCourant = dateDebutContratClient.get(Calendar.MONTH);
+            while(dateDebutContratClient.get(Calendar.DAY_OF_MONTH)!=dateFinContratClient.get(Calendar.DAY_OF_MONTH)
+                    || dateDebutContratClient.get(Calendar.MONTH)!=dateFinContratClient.get(Calendar.MONTH)
+                    || dateDebutContratClient.get(Calendar.YEAR)!=dateFinContratClient.get(Calendar.YEAR)) {
+                if(!isWeekend(dateDebutContratClient)) {
+                    coutRevient += configuration.getCoutUsineHeure()*configuration.getTravailHeureJour()+configuration.getPrixBobineHeure()*configuration.getTravailHeureJour();
+                }
+                dateDebutContratClient.add(Calendar.DAY_OF_MONTH,1);
+                if(dateDebutContratClient.get(Calendar.MONTH)!=moisCourant) {
+                    //On augmente le prix de l'acier comme le mois vient de changer
+                    configuration.augmentePrixAcierMois();
+                    moisCourant = dateDebutContratClient.get(Calendar.MONTH);
+                }
+            }
+            System.out.println("Cout de revient de " + coutRevient + " euro(s) pour la production de " 
+                    + configuration.getTotalQuantiteCommandeeClient(configuration.getClients().get(i)) 
+                    + " boulon(s) pour le client "+ configuration.getClients().get(i));
         }
+        
     }
     
     /**
@@ -269,44 +305,42 @@ public class Simulation {
      */
     private Calendar getDateFinContratClient(String client) {
         Calendar res = Calendar.getInstance();
-        
         Configuration configuration = Configuration.getInstance();
+        ArrayList<Echeance> echeances = configuration.getEcheances();
+        
         Commande commande;
         
-        for(int i=0; i<configuration.getEcheances().size(); ++i) {
-            for(int j=0; j<configuration.getEcheances().get(i).getListCommandes().size(); ++j) {
+        for(int i=0; i<echeances.size(); ++i) {
+            for(int j=0; j<echeances.get(i).getListCommandes().size(); ++j) {
                 commande = configuration.getEcheances().get(i).getListCommandes().get(j);
                 if(client.equals(commande.getClient())) {
                     //Si la date correspondant au client que nous recherchons
-                    res = (Calendar) configuration.getEcheances().get(i).getDate().clone();
+                    res = (Calendar) configuration.getEcheances().get(i).getDate();
                 }
             }
         }
         
-        return res;
+        return (Calendar) res.clone();
     }
     
     /**
      * 
-     * @return le nombre de mois entre deux dates passées en paramètre
+     * @return la date à laquelle on commence à travailler pour le client (aussi appelée date de début de contrat)
      */
-    private int getNombreMois(Calendar a, Calendar b) {
-        int res = 0;
+    private Calendar getDateDebutContratClient(String client, Calendar dateFinContratClient) {
+        Calendar res;
+        Configuration configuration = Configuration.getInstance();
+        ArrayList<Echeance> echeances = configuration.getEcheances();
+        ArrayList<Long> productionTheoriqueEcheances = this.getProductionTheoriqueEcheances();
         
-        Calendar from, to;
-        if(a.compareTo(b)<=0) {
-            from = (Calendar) a.clone();
-            to = (Calendar) b.clone();
-        }
-        else {
-            from = (Calendar) b.clone();
-            to = (Calendar) a.clone();
-        }
+        Commande commande;
+        int quantiteCommandee = configuration.getTotalQuantiteCommandeeClient(client);
         
-        while(from!=to) {
-            res++;
-            from.add(Calendar.MONTH,1);
-        }
+        //Calcul le nombre de jours ouvrés nécessaires pour produire la quantité commandée
+        long nombreJoursProduction = Math.round(1/(configuration.getTravailHeureJour()
+                /configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*quantiteCommandee);
+        
+        res = getDateFrom(dateFinContratClient, nombreJoursProduction);
         
         return res;
     }

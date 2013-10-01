@@ -52,6 +52,8 @@ public class Configuration {
 
     private double margeSouhaite = 70.0;
     
+    private double tempsConstruction = -1.0;
+    
     private Calendar dateDebut;
 
     private Configuration () {
@@ -184,6 +186,10 @@ public class Configuration {
     public int getPrixBobine () {
         return prixBobine;
     }
+    
+    public long getPrixBobineHeure() {
+        return Math.round(this.prixBobine/this.getTempsConstruction());
+    }
 
     public void setPrixBobine (int val) {
         this.prixBobine = val;
@@ -218,32 +224,31 @@ public class Configuration {
     * Et on ajoute le temps unitaire de production de toutes les autres tâches
     * au temps total de production de la tâche critique
     * 
-    * @return 
+    * @return le temps de construction
     */
     public double getTempsConstruction () {
-        double res;
-        
-        double max = (double)this.taches.get(0), index_max = 0;
-        
-        
-        for(int i=1; i< this.taches.size(); ++i) {
-            //Recherche de la tâche ayant la durée maximum
-            if(this.taches.get(i)>max) {
-                max = (double) this.taches.get(i);
-                index_max = i;
+        if(this.tempsConstruction==-1.0) {
+            //Si le temps de construction n'a pas encore été calculé
+            double max = (double)this.taches.get(0), index_max = 0;
+
+            for(int i=1; i< this.taches.size(); ++i) {
+                //Recherche de la tâche ayant la durée maximum
+                if(this.taches.get(i)>max) {
+                    max = (double) this.taches.get(i);
+                    index_max = i;
+                }
+            }
+
+            this.tempsConstruction = max;
+
+            for(int i=0; i < this.taches.size(); ++i) {
+                //Pour chaque autre tâche on ajoute le temps unitaire au temps de la tâche critique
+                if(i!=index_max) {
+                    this.tempsConstruction+=this.taches.get(i)/(double)this.nbBoulonsBobine;
+                }
             }
         }
-        
-        res = max;
-        
-        for(int i=0; i < this.taches.size(); ++i) {
-            //Pour chaque autre tâche on ajoute le temps unitaire au temps de la tâche critique
-            if(i!=index_max) {
-                res+=this.taches.get(i)/(double)this.nbBoulonsBobine;
-            }
-        }
-        
-        return res;
+        return this.tempsConstruction;
     }
 
     public int getTempsLivraisonBobine () {
@@ -262,11 +267,9 @@ public class Configuration {
         this.travailHeureJour = val;
     }
 
-
     public int getTravailJourSemaine () {
         return travailJourSemaine;
     }
-
     
     public void setTravailJourSemaine (int val) {
         this.travailJourSemaine = val;
@@ -292,6 +295,16 @@ public class Configuration {
         } catch (ParseException ex) {
             Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public int getTotalQuantiteCommandeeClient(String client) {
+        int res = 0;
+        
+        for(int i=0; i<this.echeances.size(); ++i) {
+            res += this.echeances.get(i).getTotalQuantiteByClient(client);
+        }
+        
+        return res;
     }
     
     public static boolean parse(String filename) 
@@ -336,12 +349,15 @@ public class Configuration {
         res += this.prixBobine + " euros par bobine.\n";
         res += this.travailHeureJour + " heure(s) de travail par jour.\n";
         res += this.travailJourSemaine + " jour(s) de travail par semaine.\n";
-        res += this.enCoursBobine + " bobine(s) en cours d'utilisation";
-        res += this.stockMaxBobine + " bobine(s) au maximum dans le stock";
-        res += "Stock de sécurité de "+this.stockMinBobine + " bobine(s) ";
+        res += this.enCoursBobine + " bobine(s) en cours d'utilisation.\n";
+        res += this.stockMaxBobine + " bobine(s) au maximum dans le stock.\n";
+        res += "Stock de sécurité de "+this.stockMinBobine + " bobine(s).\n";
         res += this.tempsLivraisonBobine + " boulons réalisés avec une bobine.\n";
         res += this.augmentationPrixAcierMois + "% d'augmentation du prix de l'acier par mois.\n";
         res += "Cout horaire de l'usine de " + this.coutUsineHeure + " euros par heure.\n";
+        res += "Cout horaire de la matière première (bobines) au " 
+                + this.dateDebut.get(Calendar.DAY_OF_MONTH) + "/" + (this.dateDebut.get(Calendar.MONTH)+1) + "/" + this.dateDebut.get(Calendar.YEAR) 
+                + " : " + this.getPrixBobineHeure() + " euro(s) par heure.\n";
         res += this.augmentationQuantiteCommande + "% d'augmentation de la quantité commandée.\n";
         res += this.margeSouhaite + "% de marge souhaitée.\n";
         
