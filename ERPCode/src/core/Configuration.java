@@ -87,7 +87,7 @@ public class Configuration {
     }
     
     public void augmentePrixAcierMois() {
-        this.prixBobine *= (1+this.prixBobine*this.augmentationPrixAcierMois/100);
+        this.prixBobine *= (1+(this.augmentationPrixAcierMois/100));
     }
 
     public double getAugmentationQuantiteCommande () {

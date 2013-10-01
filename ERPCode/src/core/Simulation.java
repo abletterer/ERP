@@ -33,6 +33,7 @@ public class Simulation {
        this.processQ1(false);
        this.processQ2(false);
        this.processQ3();
+       this.processQ4();
     }
 
     private boolean configure (String filename) 
@@ -71,7 +72,7 @@ public class Simulation {
     }
 
     public void processQ1 (boolean useAugmentationQuantite) {
-        System.out.println("Question 1)");
+        System.out.println("\nQuestion 1)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
         
         if(useAugmentationQuantite) {
@@ -216,7 +217,7 @@ public class Simulation {
     }
 
     private void processQ2 (boolean useAugmentationQuantite) {
-        System.out.println("Question 2)");
+        System.out.println("\nQuestion 2)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
         
         simulateExecutionContrats();
@@ -268,35 +269,46 @@ public class Simulation {
     }
 
     private void processQ3 () {
+        System.out.println("\nQuestion 3)");
         Configuration configuration = Configuration.getInstance();
         
         Calendar dateDebutContratClient;
         Calendar dateFinContratClient;
         int moisCourant;
-        double coutRevient = 0.0;
+        long coutRevient = 0;
         
         for(int i=0; i<configuration.getClients().size(); ++i) {
             dateFinContratClient = getDateFinContratClient(configuration.getClients().get(i));
             dateDebutContratClient = getDateDebutContratClient(configuration.getClients().get(i), dateFinContratClient);
             moisCourant = dateDebutContratClient.get(Calendar.MONTH);
+            coutRevient = 0;
+            
             while(dateDebutContratClient.get(Calendar.DAY_OF_MONTH)!=dateFinContratClient.get(Calendar.DAY_OF_MONTH)
                     || dateDebutContratClient.get(Calendar.MONTH)!=dateFinContratClient.get(Calendar.MONTH)
                     || dateDebutContratClient.get(Calendar.YEAR)!=dateFinContratClient.get(Calendar.YEAR)) {
                 if(!isWeekend(dateDebutContratClient)) {
-                    coutRevient += configuration.getCoutUsineHeure()*configuration.getTravailHeureJour()+configuration.getPrixBobineHeure()*configuration.getTravailHeureJour();
+                    coutRevient += Math.round(configuration.getCoutUsineHeure()+configuration.getPrixBobineHeure())*configuration.getTravailHeureJour();
                 }
+                
                 dateDebutContratClient.add(Calendar.DAY_OF_MONTH,1);
+                
                 if(dateDebutContratClient.get(Calendar.MONTH)!=moisCourant) {
                     //On augmente le prix de l'acier comme le mois vient de changer
                     configuration.augmentePrixAcierMois();
                     moisCourant = dateDebutContratClient.get(Calendar.MONTH);
                 }
             }
+            
             System.out.println("Cout de revient de " + coutRevient + " euro(s) pour la production de " 
                     + configuration.getTotalQuantiteCommandeeClient(configuration.getClients().get(i)) 
-                    + " boulon(s) pour le client "+ configuration.getClients().get(i));
+                    + " boulon(s) pour le client " + configuration.getClients().get(i) + ".\n");
+            
+            System.out.println("Nous vous proposons de fixer le prix de vente de " 
+                    + configuration.getTotalQuantiteCommandeeClient(configuration.getClients().get(i)) +  " boulon(s) pour le client "
+                    + configuration.getClients().get(i) + " à " 
+                    + Math.round(coutRevient+coutRevient*(configuration.getMargeSouhaite()/100)) + " euro(s). Soit un prix unitaire de "
+                    + Math.round(coutRevient/configuration.getTotalQuantiteCommandeeClient(configuration.getClients().get(i)))+ " euros par boulon.\n");
         }
-        
     }
     
     /**

@@ -50,7 +50,7 @@
     <tempsLivraison>10</tempsLivraison>
     <minStock>1</minStock>
     <maxStock>2</maxStock>
-    <enExploitation>1</enExploitation>
+    <enExploitation>0</enExploitation>
     <heureTravail>7</heureTravail>
     <jourTravail>5</jourTravail>
     <coutUsineHeure>1000</coutUsineHeure>
