@@ -1,5 +1,6 @@
 package core;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
@@ -223,7 +224,8 @@ public class Simulation {
         simulateExecutionContrats();
     }
     
-    private void simulateExecutionContrats() {
+    private void simulateExecutionContrats() 
+    {
         Configuration configuration = Configuration.getInstance();
         ArrayList<Echeance> echeances = configuration.getEcheances();
         ArrayList<Long> productionTheoriqueEcheances = this.getProductionTheoriqueEcheances();
@@ -299,15 +301,18 @@ public class Simulation {
                 }
             }
             
-            System.out.println("Cout de revient de " + coutRevient + " euro(s) pour la production de " 
-                    + configuration.getTotalQuantiteCommandeeClient(configuration.getClients().get(i)) 
+            
+            NumberFormat num = java.text.NumberFormat.getInstance(java.util.Locale.FRENCH); 
+            
+            System.out.println("Cout de revient de " + num.format(coutRevient) + " euro(s) pour la production de " 
+                    + num.format(configuration.getTotalQuantiteCommandeeClient(configuration.getClients().get(i))) 
                     + " boulon(s) pour le client " + configuration.getClients().get(i) + ".\n");
             
             System.out.println("Nous vous proposons de fixer le prix de vente de " 
-                    + configuration.getTotalQuantiteCommandeeClient(configuration.getClients().get(i)) +  " boulon(s) pour le client "
+                    + num.format(configuration.getTotalQuantiteCommandeeClient(configuration.getClients().get(i))) +  " boulon(s) pour le client "
                     + configuration.getClients().get(i) + " à " 
-                    + Math.round(coutRevient+coutRevient*(configuration.getMargeSouhaite()/100)) + " euro(s). Soit un prix unitaire de "
-                    + Math.round(coutRevient/configuration.getTotalQuantiteCommandeeClient(configuration.getClients().get(i)))+ " euros par boulon.\n");
+                    + num.format(Math.round(coutRevient+coutRevient*(configuration.getMargeSouhaite()/100))) + " euro(s). Soit un prix unitaire de "
+                    + num.format(Math.round(coutRevient/configuration.getTotalQuantiteCommandeeClient(configuration.getClients().get(i))))+ " euros par boulon.\n");
         }
     }
     
