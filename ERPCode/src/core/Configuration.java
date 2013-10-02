@@ -55,6 +55,8 @@ public class Configuration {
     private double tempsConstruction = -1.0;
     
     private Calendar dateDebut;
+    
+    private Calendar dateFinProduction;
 
     private Configuration () {
         this.taches = new ArrayList<>();
@@ -68,6 +70,7 @@ public class Configuration {
         } catch (ParseException ex) {
             Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
         }
+        dateFinProduction = (Calendar) dateDebut.clone();
     }
 
     public static Configuration getInstance () 
@@ -280,7 +283,7 @@ public class Configuration {
     }
     
     public void setDateDebut(Calendar dateDebut) {
-        this.dateDebut = dateDebut;
+        this.dateDebut = (Calendar) dateDebut.clone();
     }
     
     /**
@@ -295,6 +298,14 @@ public class Configuration {
         } catch (ParseException ex) {
             Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public Calendar getDateFinProduction() {
+        return this.dateFinProduction;
+    }
+    
+    public void setDateFinProduction(Calendar dateFinProduction) {
+        this.dateFinProduction = (Calendar) dateFinProduction.clone();
     }
     
     public int getTotalQuantiteCommandeeClient(String client) {
