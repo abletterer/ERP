@@ -196,6 +196,7 @@ public class Simulation {
         ArrayList<Long> res = new ArrayList<>();
         Configuration configuration = Configuration.getInstance();
         Calendar lastDate = (Calendar) configuration.getDateDebut().clone();
+        ArrayList<Echeance> echeances = configuration.getEcheances();
         
         //On enlève le nombre de jours pendant lesquels l'entreprise ne produit qu'avec le nombre de bobines en stock jusqu'au temps d'attente de la réception des premières bobines commandées
         lastDate = getDateTo(lastDate, configuration.getTempsLivraisonBobine()
@@ -204,29 +205,50 @@ public class Simulation {
         
         int joursEcart;
         
-		//Calcul de la date à laquelle on arrête de produire des boulons
-		Calendar dateFinProduction = (Calendar) echeances.get(echeances.size()-1).getDate().clone();   //Récupère la dernière date de livraison
-		dateFinProduction = getDateFrom(dateFinProduction,quantite/(Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())));
-        
-        bool stopProduction = false;
-        
         for(int i=0; i<configuration.getEcheances().size(); ++i) {
             joursEcart = getNombreJoursOuvres(configuration.getEcheances().get(i).getDate() ,lastDate);  //Jours d'écart (ouvrés) entre l'échéance courante et la dernière échéance
             
-            if(!stopProduction && dateFinProduction.compareTo(configuration.getEcheances().get(i).getDate())>0) {
-				res.add(Math.round(configuration.getTravailHeureJour()
-						/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*joursEcart);
-			}
-			else {
-				res.add(0);
-				stopProduction = true;
-			}
+            res.add(Math.round(configuration.getTravailHeureJour()
+                    /configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*joursEcart);
             
             lastDate = (Calendar) configuration.getEcheances().get(i).getDate().clone();
             lastDate.add(Calendar.DAY_OF_MONTH, 1); //On ajoute 1 jour pour ne pas compter des jours de travail en double
         }
         
         return res;
+    }
+    
+    private ArrayList<Long> majQuantiteProductionTheorique(ArrayList<Long> productionTheoriqueEcheances) {
+        Configuration configuration = Configuration.getInstance();
+        ArrayList<Echeance> echeances = configuration.getEcheances();
+        
+        //Mise a jour des quantités en fonction de la date de fin de production théorique
+        int quantiteALivrer = 0;
+        
+        for(int i=0; i<echeances.size(); ++i) {
+            quantiteALivrer += echeances.get(i).getTotalQuantite();
+        }
+        
+        long productionBoulonsTheorique = 0;
+        
+        for(int i=0; i<productionTheoriqueEcheances.size(); ++i) {
+            productionBoulonsTheorique += productionTheoriqueEcheances.get(i);
+        }
+        
+        long quantite = productionBoulonsTheorique-quantiteALivrer;
+        
+        Calendar dateFinProduction = (Calendar) echeances.get(echeances.size()-1).getDate().clone();   //Récupère la dernière date de livraison
+        dateFinProduction = getDateFrom(dateFinProduction,quantite/(Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())));
+        
+        boolean stopProduction = false;
+        
+        for(int i=0; i<configuration.getEcheances().size(); ++i) {
+            if(stopProduction || dateFinProduction.compareTo(configuration.getEcheances().get(i).getDate())<0) {
+                productionTheoriqueEcheances.set(i,(long) 0);
+                stopProduction = true;
+            }
+        }
+        return productionTheoriqueEcheances;
     }
 
     private void processQ2 (boolean useAugmentationQuantite) {
