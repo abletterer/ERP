@@ -203,11 +203,23 @@ public class Simulation {
         
         int joursEcart;
         
+		//Calcul de la date à laquelle on arrête de produire des boulons
+		Calendar dateFinProduction = (Calendar) echeances.get(echeances.size()-1).getDate().clone();   //Récupère la dernière date de livraison
+		dateFinProduction = getDateFrom(dateFinProduction,quantite/(Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())));
+        
+        bool stopProduction = false;
+        
         for(int i=0; i<configuration.getEcheances().size(); ++i) {
             joursEcart = getNombreJoursOuvres(configuration.getEcheances().get(i).getDate() ,lastDate);  //Jours d'écart (ouvrés) entre l'échéance courante et la dernière échéance
             
-            res.add(Math.round(configuration.getTravailHeureJour()
-                    /configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*joursEcart);
+            if(!stopProduction && dateFinProduction.compareTo(configuration.getEcheances().get(i).getDate())>0) {
+				res.add(Math.round(configuration.getTravailHeureJour()
+						/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*joursEcart);
+			}
+			else {
+				res.add(0);
+				stopProduction = true;
+			}
             
             lastDate = (Calendar) configuration.getEcheances().get(i).getDate().clone();
             lastDate.add(Calendar.DAY_OF_MONTH, 1); //On ajoute 1 jour pour ne pas compter des jours de travail en double
@@ -220,7 +232,15 @@ public class Simulation {
         System.out.println("\nQuestion 2)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
         
+        if(useAugmentationQuantite) {
+            Configuration.getInstance().enableAugmentationQuantiteCommande(true);
+        }
+        
         simulateExecutionContrats();
+        
+        if(useAugmentationQuantite) {
+            Configuration.getInstance().enableAugmentationQuantiteCommande(false);
+        }
     }
     
     private void simulateExecutionContrats() {
@@ -238,13 +258,13 @@ public class Simulation {
                 //Si le client courant à une commande à l'échéance courante
                 quantiteALivrer = echeances.get(j).getListCommandes().get(i).getQuantite();
                 client = echeances.get(j).getListCommandes().get(i).getClient();
-                 
-                if(j!=0) {
-                    sommeProductionsTheoriqueEcheances = productionTheoriqueEcheances.get(j-1)+productionTheoriqueEcheances.get(j);
-                }
-                else {
-                    sommeProductionsTheoriqueEcheances = productionTheoriqueEcheances.get(j);
-                }
+                
+				if(j!=0) {
+					sommeProductionsTheoriqueEcheances = productionTheoriqueEcheances.get(j-1)+productionTheoriqueEcheances.get(j);
+				}
+				else {
+					sommeProductionsTheoriqueEcheances = productionTheoriqueEcheances.get(j);
+				}
                 
                 sommeProductionsTheoriqueEcheances -= quantiteALivrer;  //On soustrait la quantité à livrer au client
                 productionTheoriqueEcheances.set(j,sommeProductionsTheoriqueEcheances); //Mise a jour de la nouvelle valeur de production théorique restante
@@ -342,10 +362,7 @@ public class Simulation {
     private Calendar getDateDebutContratClient(String client, Calendar dateFinContratClient) {
         Calendar res;
         Configuration configuration = Configuration.getInstance();
-        ArrayList<Echeance> echeances = configuration.getEcheances();
-        ArrayList<Long> productionTheoriqueEcheances = this.getProductionTheoriqueEcheances();
         
-        Commande commande;
         int quantiteCommandee = configuration.getTotalQuantiteCommandeeClient(client);
         
         //Calcul le nombre de jours ouvrés nécessaires pour produire la quantité commandée
