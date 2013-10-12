@@ -3,16 +3,29 @@ package core;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Locale;
 
-
-public class Simulation {
+/**
+ * Classe singleton permettant de définir et d'executer une simulation
+ * 
+ * @author Haehnel Jonathan & Arnaud Bletterer
+ * @version 1.0
+ * @since 12/10/2013
+ */
+public class Simulation 
+{
 
     private static Simulation instance;
 
+    /**
+     * Contructeur privée
+     */
     private Simulation () {
     }
 
+    /**
+     * Retourne l'instance unique
+     * @return singleton
+     */
     public static Simulation getInstance () 
     {
         if(Simulation.instance == null)
@@ -21,6 +34,11 @@ public class Simulation {
         return Simulation.instance;
     }
 
+    /**
+     * Permet de configurer et d'executer la simulation
+     * 
+     * @param filename nom du fichier de configuration 
+     */
     public void simulate (String filename) 
     {
         // Configuration et execution de la simulation
@@ -28,6 +46,9 @@ public class Simulation {
             this.execute();
     }
 
+    /**
+     * Execute la simulation (repond au différentes questions)
+     */
     private void execute ()
     {
        this.processQ1(false);
@@ -36,6 +57,12 @@ public class Simulation {
        this.processQ4();
     }
 
+    /**
+     * Configuration de la simulation
+     * 
+     * @param filename chemin vers fichier de configuration
+     * @return true pour réussite, false sinon 
+     */
     private boolean configure (String filename) 
     {
         // Parsing du fichier de configuration XML
@@ -71,6 +98,10 @@ public class Simulation {
         return false;
     }
 
+    /**
+     * Calcul de la question 1 
+     * @param useAugmentationQuantite utilisation de l'augmentation de quantité
+     */
     public void processQ1 (boolean useAugmentationQuantite) {
         System.out.println("\nQuestion 1)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
@@ -129,7 +160,10 @@ public class Simulation {
     }
     
     /**
-     * @return la date située avant la date 'a' (séparé de 'jours' jours ouvrés)
+     * Calcul de la date située avant une date 'a' (séparé de 'jours' jours ouvrés)
+     * @param a date de référence
+     * @param jours jours ouvrés
+     * @return nouvelle date
      */
     private Calendar getDateFrom(Calendar a, long jours) {
         Calendar res = (Calendar) a.clone();
@@ -142,8 +176,11 @@ public class Simulation {
         return res;
     }
     
-    /**
-     * @return la date située après la date 'a' (séparé de 'jours' jours ouvrés)
+     /**
+     * Calcul de la date située aprés une date 'a' (séparé de 'jours' jours ouvrés)
+     * @param a date de référence
+     * @param jours jours ouvrés
+     * @return nouvelle date
      */
     private Calendar getDateTo(Calendar a, long jours) {
         Calendar res = (Calendar) a.clone();
@@ -156,8 +193,11 @@ public class Simulation {
         return res;
     }
     
-    /**
-     * @return le nombre de jours ouvrés entre deux dates
+   /**
+     * Calcul du nombre de jours ouvrées entre deux dates
+     * @param a date début
+     * @param b date fin
+     * @return nb de jours
      */
     private int getNombreJoursOuvres(Calendar a, Calendar b) {
         int res = 0;
@@ -182,8 +222,10 @@ public class Simulation {
         return res;
     }
     
+
     /**
-     * 
+     * La date correspond à un weekend ou non 
+     * @param cal date à tester
      * @return Vrai si le jour passé en paramètre est Samedi ou Dimanche
      */
     private boolean isWeekend(Calendar cal) {
@@ -191,9 +233,11 @@ public class Simulation {
                cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY;
     }
     
+
     /**
-     * 
-     * @return Les quantités que l'on peut produire pour chacune des échéances
+     * Calcul des quantités théoriques que l'on peut produire au maximum et à plein régime pour chacune des échéances
+     * @param utilisationDateFinProduction date de fin de production
+     * @return quantités que l'on peut produire pour chacune des échéances
      */
     private ArrayList<Long> getProductionTheoriqueEcheances(boolean utilisationDateFinProduction) {
         ArrayList<Long> res = new ArrayList<>();
@@ -237,6 +281,10 @@ public class Simulation {
         return res;
     }
 
+    /**
+     * Exécution de la question 2
+     * @param useAugmentationQuantite utilisation de l'augmentation de quantité 
+     */
     private void processQ2 (boolean useAugmentationQuantite) {
         System.out.println("\nQuestion 2)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
@@ -252,6 +300,10 @@ public class Simulation {
         }
     }
     
+    /**
+     * Simulation de l'éxécution des contrats
+     * (utilisation dans la question 2)
+     */
     private void simulateExecutionContrats() 
     {
         Configuration configuration = Configuration.getInstance();
@@ -302,6 +354,9 @@ public class Simulation {
         }
     }
 
+    /**
+     * Exécution de la question 3
+     */
     private void processQ3 () {
         System.out.println("\nQuestion 3)");
         Configuration configuration = Configuration.getInstance();
@@ -349,7 +404,8 @@ public class Simulation {
     }
     
     /**
-     * 
+     * Cherche la date de fin du contrat pour un client X
+     * @param client nom du client
      * @return la date de la dernière commande pour le client passé en paramètre (aussi appelée date de fin de contrat)
      */
     private Calendar getDateFinContratClient(String client) {
@@ -373,7 +429,8 @@ public class Simulation {
     }
     
     /**
-     * 
+     * Cherche la date de début du contrat pour un client X
+     * @param client nom du client
      * @return la date à laquelle on commence à travailler pour le client (aussi appelée date de début de contrat)
      */
     private Calendar getDateDebutContratClient(String client, Calendar dateFinContratClient) {
@@ -391,6 +448,9 @@ public class Simulation {
         return res;
     }
 
+    /**
+     * Execution de la question 4
+     */
     private void processQ4 () {
         processQ1(true);
         processQ2(true);

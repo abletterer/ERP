@@ -8,31 +8,52 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- *
- * @author jhaehnel
+ * Classe permettant de parser le fichier XML de configuration pour obtenir un objet "Configuration"
+ * 
+ * @author Haehnel Jonathan & Arnaud Bletterer
+ * @version 1.0
+ * @since 12/10/2013
  */
-
 public class ConfigurationHandler extends DefaultHandler 
 {
+        /**
+         * Attributs
+         */
+    
+        // résultat après parsing
 	private Configuration configuration;
 
+        // pour savoir ou l'on se trouve dans le parsing
 	private boolean inSimulation;
         private boolean inCommande;
         private boolean inEcheance;
         
+        // objets temporaires pour le parsing
         private Echeance currentEcheance;
         private String clientCommandeCourant = "";
         private int dureeExpeditionCourante = 0;
 	private ArrayList<Integer> listTaches;
 	private ArrayList<Echeance> listEcheance;
         
+        // buffer en lecture
 	private StringBuffer buffer;
 
+        /**
+         * Constructeur
+         */
 	public ConfigurationHandler()
         {
 		super();
 	}
 
+        /**
+         * Fonction appelé à chaque fois que l'on trouve une balise ouvrante
+         * @param uri
+         * @param localName nom de la balise
+         * @param qName contenu de la balise
+         * @param attributes attributs de la balise
+         * @throws SAXException 
+         */
         @Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException
         {
@@ -129,7 +150,13 @@ public class ConfigurationHandler extends DefaultHandler
                 }
 	}
 	
-        
+        /**
+         * Fonction appelé à chaque fois que l'on trouve une balise fermante
+         * @param uri
+         * @param localName nom de la balise
+         * @param qName contenu de la balise
+         * @throws SAXException 
+         */
         @Override
 	public void endElement(String uri, String localName, String qName) throws SAXException
         {
