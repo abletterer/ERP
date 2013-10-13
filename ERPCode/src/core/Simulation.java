@@ -106,11 +106,11 @@ public class Simulation
         System.out.println("\nQuestion 1)");
         System.out.println(useAugmentationQuantite?"\t # Avec augmentation de la commande client":"\t # Sans augmentation de la commande client");
         
-        if(useAugmentationQuantite) {
-            Configuration.getInstance().enableAugmentationQuantiteCommande(true);
-        }
-        
         Configuration configuration = Configuration.getInstance();
+        
+        if(useAugmentationQuantite) {
+            configuration.enableAugmentationQuantiteCommande(true);
+        }
         
         long tempsUtilisationStockBobine = Math.round(configuration.getTempsConstruction()
          * (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()));
@@ -155,7 +155,7 @@ public class Simulation
         }
         
         if(useAugmentationQuantite) {
-            Configuration.getInstance().enableAugmentationQuantiteCommande(false);
+            configuration.enableAugmentationQuantiteCommande(false);
         }
     }
     
@@ -259,10 +259,10 @@ public class Simulation
                         /configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*joursEcart);
             }
             else {
-                if(configuration.getDateFinProduction().get(Calendar.DAY_OF_MONTH) != configuration.getDateDebut().get(Calendar.DAY_OF_MONTH)
-                        && configuration.getDateFinProduction().get(Calendar.MONTH) != configuration.getDateDebut().get(Calendar.MONTH)
-                        && configuration.getDateFinProduction().get(Calendar.YEAR) != configuration.getDateDebut().get(Calendar.YEAR)
-                        &&configuration.getDateFinProduction().compareTo(configuration.getEcheances().get(i).getDate())>0) {
+                if((configuration.getDateFinProduction().get(Calendar.DAY_OF_MONTH) == configuration.getDateDebut().get(Calendar.DAY_OF_MONTH)
+                        && configuration.getDateFinProduction().get(Calendar.MONTH) == configuration.getDateDebut().get(Calendar.MONTH)
+                        && configuration.getDateFinProduction().get(Calendar.YEAR) == configuration.getDateDebut().get(Calendar.YEAR))
+                        || configuration.getDateFinProduction().compareTo(configuration.getEcheances().get(i).getDate())>0) {
                     //Si la date de fin de production est supérieure à la date de l'échéance courante
                     joursEcart = getNombreJoursOuvres(configuration.getEcheances().get(i).getDate() ,lastDate);  //Jours d'écart (ouvrés) entre l'échéance courante et la dernière échéance
 
@@ -320,10 +320,10 @@ public class Simulation
                 //Si le client courant à une commande à l'échéance courante
                 quantiteALivrer = echeances.get(j).getListCommandes().get(i).getQuantite();
                 client = echeances.get(j).getListCommandes().get(i).getClient();
-                if(configuration.getDateFinProduction().get(Calendar.DAY_OF_MONTH) != configuration.getDateDebut().get(Calendar.DAY_OF_MONTH)
-                        && configuration.getDateFinProduction().get(Calendar.MONTH) != configuration.getDateDebut().get(Calendar.MONTH)
-                        && configuration.getDateFinProduction().get(Calendar.YEAR) != configuration.getDateDebut().get(Calendar.YEAR)
-                        && configuration.getDateFinProduction().compareTo(echeances.get(i).getDate())>0) {
+                if((configuration.getDateFinProduction().get(Calendar.DAY_OF_MONTH) == configuration.getDateDebut().get(Calendar.DAY_OF_MONTH)
+                        && configuration.getDateFinProduction().get(Calendar.MONTH) == configuration.getDateDebut().get(Calendar.MONTH)
+                        && configuration.getDateFinProduction().get(Calendar.YEAR) == configuration.getDateDebut().get(Calendar.YEAR))
+                        || configuration.getDateFinProduction().compareTo(echeances.get(i).getDate())>0) {
                     if(j!=0) {
                             sommeProductionsTheoriqueEcheances = productionTheoriqueEcheances.get(j-1)+productionTheoriqueEcheances.get(j);
                     }
