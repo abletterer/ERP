@@ -132,24 +132,42 @@ public class Simulation
         
         long quantite = productionBoulonsTheorique-quantiteALivrer;
         
+        //Calcul de la date à partir de laquelle il faut commander les bobines
+        Calendar dateDebutCommande = configuration.getDateDebut();
+        if(Math.round(tempsUtilisationStockBobine/configuration.getTravailHeureJour())>configuration.getTempsLivraisonBobine()) {
+            //Si le temps de production avec la quantité de bobines disponibles est supérieur au temps que met une bobine pour être livrée
+            dateDebutCommande = getDateTo(dateDebutCommande, tempsUtilisationStockBobine/configuration.getTravailHeureJour()-configuration.getTempsLivraisonBobine());
+        }
+        
         if(quantite>0) {
             //Si la production théorique est supérieure à la quantité à livrer
             Calendar dateFinProduction = (Calendar) echeances.get(echeances.size()-1).getDate().clone();   //Récupère la dernière date de livraison
+            dateFinProduction = getDateFrom(dateFinProduction, (long) (quantite/
+                    (configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())));
             
-            dateFinProduction = getDateFrom(dateFinProduction,quantite/
-                    (Math.round(configuration.getTravailHeureJour()/configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())));
-            String dateString= dateFinProduction.get(Calendar.DAY_OF_MONTH) + "/" 
+            String dateString = dateDebutCommande.get(Calendar.DAY_OF_MONTH) + "/"
+                        + (dateDebutCommande.get(Calendar.MONTH)+1) + "/"
+                        + dateDebutCommande.get(Calendar.YEAR);
+            
+            System.out.print("Il faut commander " + (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()) 
+                    + " nouvelles bobines à partir du " + dateString);
+            
+            dateString = dateFinProduction.get(Calendar.DAY_OF_MONTH) + "/" 
                     + (dateFinProduction.get(Calendar.MONTH)+1) + "/" 
                     + dateFinProduction.get(Calendar.YEAR);
-            System.out.println("Il faut commander " + (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()) 
-                    + " nouvelles bobines toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur."
+            
+            System.out.println(" toutes les " + tempsUtilisationStockBobine + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur."
                     + " Il ne faudra plus commander de bobines à partir du " + dateString + ".");
         
             configuration.setDateFinProduction(dateFinProduction);
         }
         else {
-            System.out.println("Il faut commander " + (configuration.getStockMaxBobine() + configuration.getEnCoursBobine())
-                    + " nouvelles bobines toutes les " + tempsUtilisationStockBobine 
+            String dateString = dateDebutCommande.get(Calendar.DAY_OF_MONTH) + "/"
+                        + (dateDebutCommande.get(Calendar.MONTH)+1) + "/"
+                        + dateDebutCommande.get(Calendar.YEAR);
+            
+            System.out.print("Il faut commander " + (configuration.getStockMaxBobine()+configuration.getEnCoursBobine()) 
+                    + " nouvelles bobines à partir du " + dateString + " toutes les " + tempsUtilisationStockBobine 
                     + " heure(s) (heures ouvrées) depuis la dernière commande fournisseur.");
             configuration.setDateFinProduction(configuration.getDateDebut());
         }
@@ -250,6 +268,7 @@ public class Simulation
                 *(configuration.getStockMaxBobine()+configuration.getEnCoursBobine())));
         
         int joursEcart;
+        boolean ajoutLastQuantite = false;
         
         for(int i=0; i<configuration.getEcheances().size(); ++i) {
             if(!utilisationDateFinProduction) {
@@ -262,7 +281,7 @@ public class Simulation
                 if((configuration.getDateFinProduction().get(Calendar.DAY_OF_MONTH) == configuration.getDateDebut().get(Calendar.DAY_OF_MONTH)
                         && configuration.getDateFinProduction().get(Calendar.MONTH) == configuration.getDateDebut().get(Calendar.MONTH)
                         && configuration.getDateFinProduction().get(Calendar.YEAR) == configuration.getDateDebut().get(Calendar.YEAR))
-                        || configuration.getDateFinProduction().compareTo(configuration.getEcheances().get(i).getDate())>0) {
+                        || configuration.getDateFinProduction().compareTo(configuration.getEcheances().get(i).getDate())>=0) {
                     //Si la date de fin de production est supérieure à la date de l'échéance courante
                     joursEcart = getNombreJoursOuvres(configuration.getEcheances().get(i).getDate() ,lastDate);  //Jours d'écart (ouvrés) entre l'échéance courante et la dernière échéance
 
@@ -270,12 +289,19 @@ public class Simulation
                             /configuration.getTempsConstruction()*configuration.getNbBoulonsBobine())*joursEcart);
                 }
                 else {
+                    if(!ajoutLastQuantite) {
+                        //Au traitement de la première commande après la date de fin de production
+                        //On ajout la quantité produite depuis la dernière date jusqu'à la date de fin de production (pour avoir le reste produit)
+                        ajoutLastQuantite = true;
+                        res.add(Math.round(configuration.getTravailHeureJour()
+                                /configuration.getTempsConstruction()*configuration.getNbBoulonsBobine()*getNombreJoursOuvres(lastDate, configuration.getDateFinProduction())));
+                    }
                     res.add((long) 0);
                 }
             }
             
             lastDate = (Calendar) configuration.getEcheances().get(i).getDate().clone();
-            lastDate.add(Calendar.DAY_OF_MONTH, 1); //On ajoute 1 jour pour ne pas compter des jours de travail en double
+            lastDate = getDateTo(lastDate, 1); //On ajoute 1 jour pour ne pas compter des jours de travail en double
         }
         
         return res;
