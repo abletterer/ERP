@@ -39,10 +39,10 @@ public class Simulation
      * 
      * @param filename nom du fichier de configuration 
      */
-    public void simulate (String filename) 
+    public void simulate (String filename, boolean isJarRessource) 
     {
         // Configuration et execution de la simulation
-        if(this.configure(filename))
+        if(this.configure(filename, isJarRessource))
             this.execute();
     }
 
@@ -63,10 +63,10 @@ public class Simulation
      * @param filename chemin vers fichier de configuration
      * @return true pour réussite, false sinon 
      */
-    private boolean configure (String filename) 
+    private boolean configure (String filename, boolean isJarRessource) 
     {
         // Parsing du fichier de configuration XML
-         if(Configuration.parse(filename))
+         if(Configuration.parse(filename, isJarRessource))
          {
             
             System.out.println(">> Configuration chargée !");

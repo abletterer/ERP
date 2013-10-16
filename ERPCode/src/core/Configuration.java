@@ -482,7 +482,7 @@ public class Configuration
      * @param filename chemin du fichier XML
      * @return true si réussite, false sinon
      */
-    public static boolean parse(String filename)
+    public static boolean parse(String filename, boolean isJarRessource)
     {
         try 
         {  
@@ -491,12 +491,22 @@ public class Configuration
             SAXParser parseur;
             parseur = fabrique.newSAXParser();
             
-            InputStream inputStream = Configuration.class.getClassLoader().getResourceAsStream(filename);
- 
             System.out.println(">> Ouverture de la configuration : " + filename);
+            
+            if(isJarRessource)
+            {
+                InputStream inputStream = Configuration.class.getClassLoader().getResourceAsStream(filename);
 
-            DefaultHandler gestionnaire = new ConfigurationHandler();
-            parseur.parse(inputStream, gestionnaire);
+                DefaultHandler gestionnaire = new ConfigurationHandler();
+                parseur.parse(inputStream, gestionnaire);
+            }
+            else
+            {
+                File file = new File(filename);
+                
+                DefaultHandler gestionnaire = new ConfigurationHandler();
+                parseur.parse(file, gestionnaire);
+            }
             
             return true;
             
@@ -513,7 +523,7 @@ public class Configuration
         catch (Exception ex) 
         {
             System.err.println("ERREUR SEVERE: Impossible d'ouvrir votre fichier de configuration !");
-            ex.printStackTrace();
+            //ex.printStackTrace();
             //Logger.getLogger(Parser.class.getName()).log(Level.SEVERE, null, ex);
         }
             
