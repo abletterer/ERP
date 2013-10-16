@@ -533,6 +533,15 @@ public class Configuration
     @Override
     public String toString () {
         String res = "";
+        
+        res += "##############\n";
+        res += "##HYPOTHESES##\n";
+        res += "##############\n\n";
+        res += "On commande le nombre de bobines disponibles au maximum dans le stock\n";
+        res += "La date de commande des bobines est estimée à l'heure près.\n";
+        res += "Lors du chargement de la configuration, les dates des échéances 'crées' corrrespondent aux dates de commande soustraites au temps de livraison.\n";
+        res += "En cas de réussite de l'ensemble des contrats, il y a une quantité de boulons supplémentaire qui a été produite. Elle correspond à la production de stockMaxBobine bobine(s) en trop (dû a la derniere commande)\n";
+        
         res += "#################\n";
         res += "##CONFIGURATION##\n";
         res += "#################\n\n";
@@ -543,7 +552,7 @@ public class Configuration
         res += this.enCoursBobine + " bobine(s) en cours d'utilisation.\n";
         res += this.stockMaxBobine + " bobine(s) au maximum dans le stock.\n";
         res += "Stock de sécurité de "+this.stockMinBobine + " bobine(s).\n";
-        res += this.tempsLivraisonBobine + " boulons réalisés avec une bobine.\n";
+        res += this.tempsLivraisonBobine + " jour(s) d'attente pour la livraison des bobines.\n";
         res += this.augmentationPrixAcierMois + "% d'augmentation du prix de l'acier par mois.\n";
         res += "Cout horaire de l'usine de " + this.coutUsineHeure + " euros par heure.\n";
         res += "Cout horaire de la matière première (bobines) au " 
