@@ -17,7 +17,7 @@ public class Main
     public static void main (String[] args) 
     {
         // Chemin de la configuration
-        String configFile = "./src/ressources/simulation_exemple.xml"; // par defaut
+        String configFile = "ressources/simulation_exemple.xml"; // par defaut
         if(args.length > 0)
         {
            configFile = args[0];

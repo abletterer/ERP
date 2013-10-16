@@ -1,7 +1,10 @@
 package core;
 
+
 import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList; 
@@ -479,7 +482,7 @@ public class Configuration
      * @param filename chemin du fichier XML
      * @return true si réussite, false sinon
      */
-    public static boolean parse(String filename) 
+    public static boolean parse(String filename)
     {
         try 
         {  
@@ -488,10 +491,12 @@ public class Configuration
             SAXParser parseur;
             parseur = fabrique.newSAXParser();
             
+            InputStream inputStream = Configuration.class.getClassLoader().getResourceAsStream(filename);
+ 
             System.out.println(">> Ouverture de la configuration : " + filename);
-            File fichier = new File(filename);
+
             DefaultHandler gestionnaire = new ConfigurationHandler();
-            parseur.parse(fichier, gestionnaire);
+            parseur.parse(inputStream, gestionnaire);
             
             return true;
             
@@ -505,9 +510,10 @@ public class Configuration
             System.err.println("ERREUR SEVERE: Votre fichier de configuration ne respecte pas la norme XML !");
             //Logger.getLogger(Parser.class.getName()).log(Level.SEVERE, null, ex);
         }
-         catch (IOException ex) 
+        catch (Exception ex) 
         {
             System.err.println("ERREUR SEVERE: Impossible d'ouvrir votre fichier de configuration !");
+            ex.printStackTrace();
             //Logger.getLogger(Parser.class.getName()).log(Level.SEVERE, null, ex);
         }
             
